@@ -2,6 +2,7 @@
 using PdfToImage;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,7 +22,11 @@ namespace PdfToImage.Tests
             {
                 var pdf = new PdfItem(file);
                 await pdf.InitPageItemAsync();
-                pdf.
+
+                foreach(var pdfPage in pdf.Pages.OfType<IPdfPageSave>())
+                {
+                    await pdfPage.SaveImageAsync(System.IO.Path.Combine(dirDirPath, $"{System.IO.Path.GetFileNameWithoutExtension(pdf.FilePath)}.pdf"),ImageFormat.Png);
+                }
             }
             Assert.Fail();
         }

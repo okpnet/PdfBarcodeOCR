@@ -1,54 +1,50 @@
 ﻿using PdfiumViewer;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PdfToImage
 {
-    public class PdfItemPage
+    public class PdfItemPage:IPdfPage,IPdfPageSave
     {
         public PdfItem Parent { get; }
+
         [Range(typeof(int),"-1","1000")]
-        public int Page { get; }
+        public int PageNumber { get; }
 
         public SizeF Size { get; }
 
         public PdfItemPage(PdfItem paretn,PdfDocument document,int page)
         {
             Parent = paretn;
-            Page = document.PageCount>page && page>=0?page : -1;
-            if (Page != -1)
+            PageNumber = document.PageCount>page && page>=0?page : -1;
+            if (PageNumber != -1)
             {
-                Size = document.PageSizes[Page];
+                Size = document.PageSizes[PageNumber];
             }
         }
         
         public async Task<Image?> GetImageAsync()
         {
-            if(Parent.Document is null && 0 > Page)
+            if(Parent.Document is null && 0 > PageNumber)
             {
                 return null;
             }
             return await Task.Run(() =>
             {
-                return Parent.Document!.Render(Page, Size.Width, Size.Height, PdfRenderFlags.CorrectFromDpi);
+                return Parent.Document!.Render(PageNumber, Size.Width, Size.Height, PdfRenderFlags.CorrectFromDpi);
             });
         }
 
         public async Task SaveImageAsync(string filepath,ImageFormat format)
         {
-            if (Parent.Document is null && 0 > Page)
+            if (Parent.Document is null && 0 > PageNumber)
             {
                 return;
             }
             await Task.Run(() =>
             {
-                var image = Parent.Document!.Render(Page, Size.Width, Size.Height, PdfRenderFlags.CorrectFromDpi);
+                var image = Parent.Document!.Render(PageNumber, Size.Width, Size.Height, PdfRenderFlags.CorrectFromDpi);
                 image.Save(filepath, format);
             });
         }

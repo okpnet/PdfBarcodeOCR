@@ -3,13 +3,30 @@ using System.Drawing;
 
 namespace PdfToImage
 {
-    public class PdfItem:IDisposable
+    public class PdfItem:IPdf,IPdfFile,IDisposable
     {
         private string? _filePath;
+        private string? _baseFilePath;
 
-        private IList<PdfItemPage> _pdfItems=[];
+        private IList<IPdfPage> _pdfItems=[];
 
-        public PdfDocument? Document { get; }
+        public IEnumerable<IPdfPage> Pages => _pdfItems;
+
+        public string? FilePath => _baseFilePath;
+
+        public IPdfPage? this[int pageIndex]
+        {
+            get
+            {
+                if(Document is null || 0 > pageIndex || pageIndex > Document.PageCount)
+                {
+                    return null;
+                }
+                return _pdfItems[pageIndex];
+            }
+        }
+
+        internal PdfDocument? Document { get; }
 
         public PdfItem(string filePath)
         {
@@ -32,6 +49,11 @@ namespace PdfToImage
                         System.IO.File.Delete(_filePath);
                     }
                     _filePath = null;
+                    _baseFilePath = null;
+                }
+                else
+                {
+                    _baseFilePath = filePath;
                 }
             }
         }
