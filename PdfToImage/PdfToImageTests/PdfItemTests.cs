@@ -15,7 +15,7 @@ namespace PdfToImage.Tests
         [TestMethod()]
         public async Task PdfItemTest()
         {
-            var dirDirPath = "C:\\Users\\htakahashi\\Downloads\\";
+            var dirDirPath = "C:\\Users\\htakahashi\\Desktop\\新しいフォルダー\\";
             var files = System.IO.Directory.GetFiles(dirDirPath, "*.pdf");
             if (files is null || files.Length == 0) Assert.Fail();
             foreach (var file in files)
@@ -34,6 +34,8 @@ namespace PdfToImage.Tests
         [TestMethod()]
         public void InitPageItemAsyncTest()
         {
+            //トリミング
+
             Assert.Fail();
         }
 
