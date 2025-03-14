@@ -44,7 +44,8 @@ namespace PdfToImage
             }
             await Task.Run(() =>
             {
-                var image = Parent.Document!.Render(PageNumber, Size.Width, Size.Height, PdfRenderFlags.CorrectFromDpi);
+                var dpi = (float)Parent.Dpi;
+                var image = Parent.Document!.Render(PageNumber, dpi, dpi, PdfRenderFlags.CorrectFromDpi);
                 image.Save(filepath, format);
             });
         }

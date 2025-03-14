@@ -14,6 +14,8 @@ namespace PdfToImage
 
         public string? FilePath => _baseFilePath;
 
+        public DpiType Dpi { get; set; } = DpiType.DPI300;
+
         public IPdfPage? this[int pageIndex]
         {
             get

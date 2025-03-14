@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace PdfToImage
 {
-    public interface IPdf
+    public enum DpiType:uint
     {
-        DpiType Dpi { get; set; }
-
-        IEnumerable<IPdfPage> Pages { get; }
-
-        IPdfPage? this[int pageIndex] { get; }
+        DPI100 = 100,
+        DPI200 = 200,
+        DPI300 = 300,
+        DPI400 = 400,
+        DPI600 = 600
     }
 }

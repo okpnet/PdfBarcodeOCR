@@ -10,24 +10,42 @@ using System.Threading.Tasks;
 namespace PdfToImage.Tests
 {
     [TestClass()]
-    public class PdfItemPageTests
+    public class PdfItemTests
     {
         [TestMethod()]
-        public async void SaveImageAsyncTest()
+        public async Task PdfItemTest()
         {
             var dirDirPath = "C:\\Users\\htakahashi\\Downloads\\";
             var files = System.IO.Directory.GetFiles(dirDirPath, "*.pdf");
             if (files is null || files.Length == 0) Assert.Fail();
-            foreach(var file in files)
+            foreach (var file in files)
             {
                 var pdf = new PdfItem(file);
                 await pdf.InitPageItemAsync();
 
-                foreach(var pdfPage in pdf.Pages.OfType<IPdfPageSave>())
+                foreach (var pdfPage in pdf.Pages.OfType<IPdfPageSave>())
                 {
-                    await pdfPage.SaveImageAsync(System.IO.Path.Combine(dirDirPath, $"{System.IO.Path.GetFileNameWithoutExtension(pdf.FilePath)}.png"),ImageFormat.Png);
+                    await pdfPage.SaveImageAsync(System.IO.Path.Combine(dirDirPath, $"{System.IO.Path.GetFileNameWithoutExtension(pdf.FilePath)}_{pdfPage.PageNumber+1}.png"), ImageFormat.Png);
                 }
             }
+            Assert.Fail();
+        }
+
+        [TestMethod()]
+        public void InitPageItemAsyncTest()
+        {
+            Assert.Fail();
+        }
+
+        [TestMethod()]
+        public void FromFileTest()
+        {
+            Assert.Fail();
+        }
+
+        [TestMethod()]
+        public void DisposeTest()
+        {
             Assert.Fail();
         }
     }
