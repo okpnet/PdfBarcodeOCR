@@ -8,7 +8,7 @@ namespace BarcodeImageReader
 {
     public static class BarcodeReader
     {
-        public static string? ReadFromFile(string imagePath)
+        public static IBarcodeItem? ReadFromFile(string imagePath)
         {
             if (!System.IO.File.Exists(imagePath))
             {
@@ -22,7 +22,7 @@ namespace BarcodeImageReader
             return ReadFromImage(image);
         }
 
-        public static string? ReadFromImage(System.Drawing.Image image)
+        public static IBarcodeItem? ReadFromImage(System.Drawing.Image image)
         {
             using var memoryStream= new MemoryStream();
             image.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Bmp);
@@ -34,7 +34,7 @@ namespace BarcodeImageReader
             return ReadFromBitmap(bmap);
         }
 
-        public static string? ReadFromBitmap(Bitmap bitmap)
+        public static IBarcodeItem? ReadFromBitmap(Bitmap bitmap)
         {
             
             try
@@ -44,7 +44,7 @@ namespace BarcodeImageReader
                 var source = new BitmapLuminanceSource(rebitmap);
                 reader.Options.TryInverted = true;
                 var result = reader.Decode(source);
-                return result?.Text;
+                return result is null ? null : new BarcodeItem(result);
             }
             catch (Exception ex)
             {
