@@ -19,7 +19,7 @@ namespace ImageShredded.Tests
         {
             try
             {
-                var imagePath = "C:\\Users\\htakahashi\\Desktop\\新しいフォルダー\\A00441J (2)_1.Bmp";
+                var imagePath = "C:\\Users\\htakahashi\\Desktop\\新しいフォルダー\\A76832I_1.bmp";
                 var outDir = "C:\\Users\\htakahashi\\Desktop\\新しいフォルダー\\shredded";
 
                 var bitmap = new Bitmap(imagePath);
