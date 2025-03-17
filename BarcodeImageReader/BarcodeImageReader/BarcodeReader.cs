@@ -36,7 +36,6 @@ namespace BarcodeImageReader
 
         public static IBarcodeItem? ReadFromBitmap(Bitmap bitmap)
         {
-            
             try
             {
                 var rebitmap = _correction(bitmap);
