@@ -2,6 +2,7 @@
 using PdfToImage;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
@@ -25,7 +26,7 @@ namespace PdfToImage.Tests
 
                 foreach (var pdfPage in pdf.Pages.OfType<IPdfPageSave>())
                 {
-                    await pdfPage.SaveImageAsync(System.IO.Path.Combine(dirDirPath, $"{System.IO.Path.GetFileNameWithoutExtension(pdf.FilePath)}_{pdfPage.PageNumber+1}.png"), ImageFormat.Png);
+                    await pdfPage.SaveImageAsync(System.IO.Path.Combine(dirDirPath, $"{System.IO.Path.GetFileNameWithoutExtension(pdf.FilePath)}_{pdfPage.PageNumber+1}.{ImageFormat.Bmp.ToString()}"), ImageFormat.Bmp);
                 }
             }
             Assert.Fail();

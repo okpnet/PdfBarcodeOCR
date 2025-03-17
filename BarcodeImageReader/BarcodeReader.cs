@@ -14,7 +14,7 @@ namespace BarcodeImageReader
             {
                 return null;
             }
-            var image=Image.FromFile(imagePath);
+            using var image=Image.FromFile(imagePath);
             if(image is null)
             {
                 return null;
@@ -26,18 +26,31 @@ namespace BarcodeImageReader
         {
             using var memoryStream= new MemoryStream();
             image.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Bmp);
+            if (memoryStream.Length == 0)
+            {
+                return null;
+            }
             var bmap = new Bitmap(memoryStream);
             return ReadFromBitmap(bmap);
         }
 
         public static string? ReadFromBitmap(Bitmap bitmap)
         {
-            var rebitmap = _correction(bitmap);
-            var reader = new ZXing.BarcodeReaderGeneric();
-            var source = new BitmapLuminanceSource(rebitmap);
-            reader.Options.TryInverted = true;
-            var result = reader.Decode(source);
-            return result?.Text;
+            
+            try
+            {
+                var rebitmap = _correction(bitmap);
+                var reader = new ZXing.BarcodeReaderGeneric();
+                var source = new BitmapLuminanceSource(rebitmap);
+                reader.Options.TryInverted = true;
+                var result = reader.Decode(source);
+                return result?.Text;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+                return null;
+            }
         }
 
         internal static Bitmap _correction(Bitmap img)

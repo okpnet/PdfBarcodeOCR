@@ -25,7 +25,7 @@ namespace PdfToImage.Tests
 
                 foreach(var pdfPage in pdf.Pages.OfType<IPdfPageSave>())
                 {
-                    await pdfPage.SaveImageAsync(System.IO.Path.Combine(dirDirPath, $"{System.IO.Path.GetFileNameWithoutExtension(pdf.FilePath)}.png"),ImageFormat.Png);
+                    await pdfPage.SaveImageAsync(System.IO.Path.Combine(dirDirPath, $"{System.IO.Path.GetFileNameWithoutExtension(pdf.FilePath)}.bmp"),ImageFormat.Png);
                 }
             }
             Assert.Fail();
