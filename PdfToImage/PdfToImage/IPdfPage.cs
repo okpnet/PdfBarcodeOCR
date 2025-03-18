@@ -2,12 +2,16 @@
 
 namespace PdfToImage
 {
-    public interface IPdfPage
+    public interface IPdfPage:IDisposable
     {
         int PageNumber { get; }
 
         SizeF Size { get; }
 
-        Task<Image?> GetImageAsync();
+        Image? Thumbnail { get; set; }
+
+        void Redraw();
+
+        Image? GetImage();
     }
 }

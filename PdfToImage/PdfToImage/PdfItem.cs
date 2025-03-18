@@ -10,6 +10,11 @@ namespace PdfToImage
     /// </summary>
     public class PdfItem:IPdf,IPdfFile,IDisposable
     {
+        const int THUMB_RATIO = 168;
+        /// <summary>
+        /// 初期化フラグ
+        /// </summary>
+        bool isInit = false;
         /// <summary>
         /// コピーしたPDFファイルのパス
         /// </summary>
@@ -33,11 +38,15 @@ namespace PdfToImage
         /// <summary>
         /// PDFドキュメントのページ数
         /// </summary>
-        public int NumberOfPage { get; }
+        public int NumberOfPage { get; protected set; } = -1;
         /// <summary>
         /// 出力解像度
         /// </summary>
         public DpiType Dpi { get; set; } = DpiType.DPI300;
+        /// <summary>
+        /// 
+        /// </summary>
+        public int ThumbnailRatio { get; set; } = THUMB_RATIO;
         /// <summary>
         /// ページにアクセスするためのインデクサ
         /// </summary>
@@ -68,29 +77,44 @@ namespace PdfToImage
         /// <param name="filePath"></param>
         public PdfItem(string filePath)
         {
-            if (!System.IO.File.Exists(filePath))
+            _filePath = System.IO.Path.GetTempFileName();
+            System.IO.File.Copy(filePath, _filePath, true);
+        }
+
+        public PdfItem(string filePath,string tmpPath)
+        {
+            _filePath = tmpPath;
+            System.IO.File.Copy(filePath, _filePath, true);
+        }
+
+        public async Task InitilizePageAsync(IProgress<(int,int)>? progress=null)
+        {
+            if (isInit)
             {
                 return;
             }
-            _filePath = System.IO.Path.GetTempFileName();
-            System.IO.File.Copy(filePath, _filePath, true);
             using var pdfDoc = PdfDocument.Load(_filePath);
             if (pdfDoc is not null)
             {
                 NumberOfPage = pdfDoc.PageCount;
-                for (var pageIndex = 0; NumberOfPage > pageIndex; pageIndex++)
+                
+                await Task.Run(() =>
                 {
-                    _pdfItems.Add(new PdfItemPage(this, pdfDoc, pageIndex));
-                }
-                _baseFilePath = filePath;
+                    for (var pageIndex = 0; NumberOfPage > pageIndex; pageIndex++)
+                    {
+                        progress?.Report(new(pageIndex, NumberOfPage));
+                        _pdfItems.Add(new PdfItemPage(this, pdfDoc, pageIndex, _filePath!));
+                    }
+                });
             }
             else
             {
-                System.IO.File.Delete(_filePath);
+                System.IO.File.Delete(_filePath!);
                 _filePath = null;
                 _baseFilePath = null;
             }
         }
+
         /// <summary>
         /// 指定ページのイメージを取得
         /// </summary>
@@ -106,7 +130,7 @@ namespace PdfToImage
             using var pdfDoc = PdfDocument.Load(_filePath);
             if (this[page] is PdfItemPage pdfPage)
             {
-                return await pdfPage.GetImageAsync(pdfDoc);
+                return await Task.Run(()=>pdfPage.GetImage());
             }
             return null;
         }
@@ -122,7 +146,7 @@ namespace PdfToImage
             using var pdfDoc = PdfDocument.Load(_filePath);
             if (this[page] is PdfItemPage pdfPage)
             {
-                await pdfPage.SaveImageAsync(pdfDoc,filepath,format);
+                await Task.Run(() => pdfPage.SaveImage(pdfDoc, filepath, format));
             }
         }
 
@@ -131,18 +155,17 @@ namespace PdfToImage
         /// 全ページをイメージとして保存するとき、ファイル名のパターンが限定されるためImageインスタンスを返す
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<Image> AllPageImages()
+        public IEnumerable<IPageImage> AllPageImages()
         {
             var pdfDoc=PdfDocument.Load(_filePath);
             if(pdfDoc is null)
             {
                 yield break;
             }
-            for (var pageIndex=0;pdfDoc.PageCount> pageIndex; pageIndex++)
+            foreach(var page in Pages.OfType<PdfItemPage>())
             {
-                var sizeF=pdfDoc.PageSizes[pageIndex];
-                var result = pdfDoc.Render(pageIndex, (int)Dpi, (int)Dpi, PdfRenderFlags.CorrectFromDpi);
-                if(result is not null) yield return result;
+                var image=page.GetImage();
+                if (image is not null) yield return new PageImage(page,image);
             }
         }
 
@@ -151,6 +174,10 @@ namespace PdfToImage
             if(System.IO.File.Exists(_filePath))
             {
                 System.IO.File.Delete(_filePath);
+            }
+            foreach(var page in Pages)
+            {
+                page.Dispose();
             }
         }
     }

@@ -11,12 +11,16 @@ namespace PdfToImage
     {
         DpiType Dpi { get; set; }
 
+        int ThumbnailRatio { get; }
+
         int NumberOfPage { get; }
 
         IEnumerable<IPdfPage> Pages { get; }
 
         IPdfPage? this[int pageIndex] { get; }
 
-        IEnumerable<Image> AllPageImages();
+        Task<Image?> GetImageAsync(int page = 0);
+
+        IEnumerable<IPageImage> AllPageImages();
     }
 }
