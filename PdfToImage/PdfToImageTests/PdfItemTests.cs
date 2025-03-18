@@ -14,19 +14,20 @@ namespace PdfToImage.Tests
     public class PdfItemTests
     {
         [TestMethod()]
-        public async Task PdfItemTest()
+        public void PdfItemTest()
         {
             var dirDirPath = "C:\\Users\\htakahashi\\Desktop\\新しいフォルダー\\";
             var files = System.IO.Directory.GetFiles(dirDirPath, "*.pdf");
             if (files is null || files.Length == 0) Assert.Fail();
+            
             foreach (var file in files)
             {
                 var pdf = new PdfItem(file);
-                await pdf.InitPageItemAsync();
-
-                foreach (var pdfPage in pdf.Pages.OfType<IPdfPageSave>())
+                var index = 0;
+                foreach (var image in pdf.AllPageImages())
                 {
-                    await pdfPage.SaveImageAsync(System.IO.Path.Combine(dirDirPath, $"{System.IO.Path.GetFileNameWithoutExtension(pdf.FilePath)}_{pdfPage.PageNumber+1}.{ImageFormat.Bmp.ToString()}"), ImageFormat.Bmp);
+                    index+=1;
+                    image.Save(System.IO.Path.Combine(dirDirPath, $"{System.IO.Path.GetFileNameWithoutExtension(pdf.FilePath)}_{index}.{ImageFormat.Bmp.ToString()}"), ImageFormat.Bmp);
                 }
             }
             Assert.Fail();

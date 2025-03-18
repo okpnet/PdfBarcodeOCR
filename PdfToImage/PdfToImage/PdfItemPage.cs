@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using System.Drawing.Imaging;
+using Image = System.Drawing.Image;
 
 namespace PdfToImage
 {
@@ -26,28 +27,57 @@ namespace PdfToImage
         
         public async Task<Image?> GetImageAsync()
         {
-            if(Parent.Document is null && 0 > PageNumber)
+            if(Parent.Document is null || 0 > PageNumber)
             {
                 return null;
             }
+            using PdfDocument? pdfDocument = Parent.Document;
             return await Task.Run(() =>
             {
-                return Parent.Document!.Render(PageNumber, Size.Width, Size.Height, PdfRenderFlags.CorrectFromDpi);
+                var resultImage= Parent.Document.Render(PageNumber, (int)Parent.Dpi, (int)Parent.Dpi, PdfRenderFlags.CorrectFromDpi);
+                Parent.Document.Dispose();
+                return resultImage;
             });
         }
 
         public async Task SaveImageAsync(string filepath,ImageFormat format)
         {
-            if (Parent.Document is null && 0 > PageNumber)
+            if (Parent.Document is null || 0 > PageNumber)
             {
                 return;
             }
-            await Task.Run(() =>
+
+            try
             {
-                var dpi = (float)Parent.Dpi;
-                var image = Parent.Document!.Render(PageNumber, dpi, dpi, PdfRenderFlags.CorrectFromDpi);
-                image.Save(filepath, format);
+                using Image? image = await GetImageAsync(Parent.Document);
+                image?.Save(filepath, format);
+            }
+            finally
+            {
+                Parent.Document.Dispose();
+            }
+        }
+
+        internal async Task<Image?> GetImageAsync(PdfDocument pdfDocument)
+        {
+            if ( 0 > PageNumber)
+            {
+                return null;
+            }
+            return await Task.Run(() =>
+            {
+                return pdfDocument.Render(PageNumber, (int)Parent.Dpi, (int)Parent.Dpi, PdfRenderFlags.CorrectFromDpi);
             });
+        }
+
+        internal async Task SaveImageAsync(PdfDocument pdfDocument,string filepath, ImageFormat format)
+        {
+            if ( 0 > PageNumber)
+            {
+                return;
+            }
+            var image=await GetImageAsync(pdfDocument);
+            image?.Save(filepath, format);
         }
     }
 }

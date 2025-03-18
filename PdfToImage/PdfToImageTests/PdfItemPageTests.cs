@@ -21,7 +21,6 @@ namespace PdfToImage.Tests
             foreach(var file in files)
             {
                 var pdf = new PdfItem(file);
-                await pdf.InitPageItemAsync();
 
                 foreach(var pdfPage in pdf.Pages.OfType<IPdfPageSave>())
                 {
