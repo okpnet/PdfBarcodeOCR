@@ -1,6 +1,6 @@
 ﻿using PdfToImage;
 
-namespace ImageManagement
+namespace ImageManagement.Pdf
 {
     public class PdfFileIem : IPageItem
     {
@@ -17,7 +17,7 @@ namespace ImageManagement
         public PdfFileIem(IParentPdfFileItem parent, IPdfPage pdfPage)
         {
             IsInitialized = false;
-            _parent= parent;
+            _parent = parent;
             PdfPages = pdfPage;
         }
     }

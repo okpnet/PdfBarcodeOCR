@@ -1,11 +1,11 @@
 ﻿using PdfToImage;
 
-namespace ImageManagement
+namespace ImageManagement.Pdf
 {
     /// <summary>
     /// PDFファイルの情報インターフェイス
     /// </summary>
-    public interface IPageItem: IProcessingModel
+    public interface IPageItem : IProcessingModel
     {
         /// <summary>
         /// PDFファイルを読み込み、サムネイルができている状態

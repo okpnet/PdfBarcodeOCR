@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ImageManagement
+namespace ImageManagement.Pdf
 {
-    public interface IThumbnaileService:IImageFacade
+    public interface IThumbnaileService : IImageFacade
     {
         Image Create();
     }
