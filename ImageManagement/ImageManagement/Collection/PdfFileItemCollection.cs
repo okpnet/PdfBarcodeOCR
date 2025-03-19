@@ -1,7 +1,9 @@
-﻿using PdfToImage;
+﻿using ImageManagement.Adapter;
+using ImageManagement.Base;
+using PdfToImage;
 using System.Collections.ObjectModel;
 
-namespace ImageManagement.Pdf
+namespace ImageManagement.Collection
 {
     /// <summary>
     /// バインドするPDFページのコレクション

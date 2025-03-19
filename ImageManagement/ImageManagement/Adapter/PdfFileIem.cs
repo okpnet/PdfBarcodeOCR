@@ -1,6 +1,6 @@
 ﻿using PdfToImage;
 
-namespace ImageManagement.Pdf
+namespace ImageManagement.Adapter
 {
     public class PdfFileIem : IPageItem
     {

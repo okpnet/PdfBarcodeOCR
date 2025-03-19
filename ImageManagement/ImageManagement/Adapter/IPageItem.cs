@@ -1,6 +1,7 @@
-﻿using PdfToImage;
+﻿using ImageManagement.Base;
+using PdfToImage;
 
-namespace ImageManagement.Pdf
+namespace ImageManagement.Adapter
 {
     /// <summary>
     /// PDFファイルの情報インターフェイス

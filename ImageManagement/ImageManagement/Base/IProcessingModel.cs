@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ImageManagement.Pdf
+namespace ImageManagement.Base
 {
     /// <summary>
     /// 忙しいモデル

@@ -1,11 +1,12 @@
-﻿using PdfToImage;
+﻿using ImageManagement.Base;
+using PdfToImage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ImageManagement.Pdf
+namespace ImageManagement.Collection
 {
     /// <summary>
     /// PDFファイルの情報のコレクションインターフェイス

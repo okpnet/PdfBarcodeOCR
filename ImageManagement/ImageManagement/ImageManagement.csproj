@@ -22,7 +22,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\BarcodeImageReader\BarcodeImageReader\BarcodeImageReader.csproj" />
+    <ProjectReference Include="..\..\ImageShredded\ImageShredded\ImageShredded.csproj" />
     <ProjectReference Include="..\..\PdfToImage\PdfToImage\PdfToImage.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Service\" />
   </ItemGroup>
 
 </Project>
