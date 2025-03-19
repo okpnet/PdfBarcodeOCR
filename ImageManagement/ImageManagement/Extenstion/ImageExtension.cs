@@ -13,33 +13,6 @@ namespace ImageManagement.Extenstion
 {
     public static class ImageExtension
     {
-        public static async Task<string> GetBarcodeValue(string imagePath)
-        {
-            if (!imagePath.IsFileExists())
-            {
-                return string.Empty;
-            }
-            try
-            {
-
-                using var baseImage = new Bitmap(imagePath);
-                var firstResult=await Task.Run(()=>BarcodeImageReader.BarcodeReader.ReadFromBitmap(baseImage));
-                if(firstResult is not null)
-                {
-                    return firstResult.Value;
-                }
-                var shreddedImages = ImageShredded.BmpShredded.GetHorizotalShredded(baseImage, 5);
-                var result = new List<IBarcodeItem>();
-                foreach (var secImge in shreddedImages)
-                {
-
-                }
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
         /// <summary>
         /// イメージからバーコード読み込み
         /// </summary>
@@ -52,30 +25,54 @@ namespace ImageManagement.Extenstion
                 var result = BarcodeReader.ReadFromBitmap(bitmap);
                 return result is null ? null : new BarcodeResult(result.Value);
             });
+
             if(result is not null)
             {
                 return result;
             }
             else
             {
-                IEnumerable<Image> images = [];
+                Image[] images = ImageShredded.BmpShredded.GetHorizotalShredded(bitmap, ImageManagementDefine.SHREDDED_HEIGHT).ToArray();
                 var strechWidth = (int)(bitmap.Width * ImageManagementDefine.STRECH_WIDTH);
                 try
                 {
-                    images = ImageShredded.BmpShredded.GetHorizotalShredded(bitmap, ImageManagementDefine.SHREDDED_HEIGHT);
-                    var shreddedTryResult = await images.OfType<Bitmap>().GetBarcodeValueShreddedHorizontal(ImageManagementDefine.SHREDDED_HEIGHT);
-                    if (shreddedTryResult is not null)
+                    //2回目。千切りにして読みやすくする
+                    var result2 =await Task.Run(() =>
                     {
+                        var shreddedTryResult = images.OfType<Bitmap>().GetBarcodeValueShreddedHorizontal(ImageManagementDefine.SHREDDED_HEIGHT);
+                        if (shreddedTryResult is null)
+                        {
+                            return null;
+                        }
                         return shreddedTryResult;
-                    }
-                    var strechImagesResult = images.Select(t =>
+                    });
+
+                    if(result2 is not null)
                     {
-                        using var strechImage = new Bitmap(strechWidth, ImageManagementDefine.SHREDDED_HEIGHT);
-                        using var grph = Graphics.FromImage(strechImage);
-                        grph.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                        grph.DrawImage(strechImage, new Rectangle(0, 0, strechWidth, ImageManagementDefine.SHREDDED_HEIGHT));
-                        return strechImage;
-                    }).GetBarcodeValueShreddedHorizontal(ImageManagementDefine.SHREDDED_HEIGHT);
+                        return result2;
+                    }
+
+                    var result3 = await Task.Run(() =>
+                    {
+                        //3回目。千切りを引き延ばして空白スペースを確保する
+                        var strechImages = images.Select(t =>
+                        {
+                            var strechImage = new Bitmap(strechWidth, ImageManagementDefine.SHREDDED_HEIGHT);
+                            using var grph = Graphics.FromImage(strechImage);
+                            grph.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                            grph.DrawImage(strechImage, new Rectangle(0, 0, strechWidth, ImageManagementDefine.SHREDDED_HEIGHT));
+                            return strechImage;
+                        }).ToArray();
+                        var strechResult = strechImages.OfType<Bitmap>().GetBarcodeValueShreddedHorizontal(ImageManagementDefine.SHREDDED_HEIGHT);
+                        foreach(var strechImage in strechImages)
+                        {
+                            strechImage.Dispose();
+                        }
+                        return strechResult;
+                    });
+
+                    return result3;//Nullなら読み込めていない
+                    
                 }
                 finally
                 {
@@ -94,28 +91,25 @@ namespace ImageManagement.Extenstion
         /// <param name="images"></param>
         /// <param name="shreddedpixel"></param>
         /// <returns></returns>
-        internal static async Task<BarcodeResult?> GetBarcodeValueShreddedHorizontal(this IEnumerable<Bitmap> images, int shreddedHeight)
+        internal static BarcodeResult? GetBarcodeValueShreddedHorizontal(this IEnumerable<Bitmap> images, int shreddedHeight)
         {
-            return await Task.Run(() =>
+            var resultList = new List<IBarcodeItem?>(images.Count());
+            var index = 0;
+            foreach (var shreddeddImage in images.OfType<Bitmap>())
             {
-                var resultList = new List<IBarcodeItem?>(images.Count());
-                var index = 0;
-                foreach (var shreddeddImage in images.OfType<Bitmap>())
-                {
-                    index += 1;
-                    var result = BarcodeImageReader.BarcodeReader.ReadFromBitmap(shreddeddImage);
-                    resultList.Add(result);
-                }
-                if (resultList.Count == 0)
-                {
-                    return null;
-                }
-                var key = resultList.GroupBy(t => t.Value).Aggregate((a, b) => a.Count() > b.Count() ? a : b).Key;
-                return new BarcodeResult(
-                    key,
-                    GetHorizontalShreddedRect(resultList,key, shreddedHeight)
-                    );
-            });
+                index += 1;
+                var result = BarcodeImageReader.BarcodeReader.ReadFromBitmap(shreddeddImage);
+                resultList.Add(result);
+            }
+            if (resultList.Count == 0)
+            {
+                return null;
+            }
+            var key = resultList.GroupBy(t => t.Value).Aggregate((a, b) => a.Count() > b.Count() ? a : b).Key;
+            return new BarcodeResult(
+                key,
+                GetHorizontalShreddedRect(resultList, key, shreddedHeight)
+                );
         }
 
         /// <summary>
