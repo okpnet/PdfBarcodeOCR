@@ -1,17 +1,10 @@
 ﻿using BarcodeImageReader;
 using ImageManagement.Adapter;
-using PdfToImage;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
-namespace ImageManagement.Extenstion
+namespace ImageManagement.Helper
 {
-    public static class ImageExtension
+    public static class ImageBarcodeHelper
     {
         /// <summary>
         /// イメージからバーコード読み込み
@@ -20,19 +13,19 @@ namespace ImageManagement.Extenstion
         /// <returns></returns>
         public static async Task<BarcodeParameter> GetBarcodeResult(this Bitmap bitmap)
         {
-            
+
             BarcodeParameter result = default!;
             result = await Task.Run(() =>
             {
                 var result = BarcodeReader.ReadFromBitmap(bitmap);
-                if(result.TryGetResultValue(out var barcode))
+                if (result.TryGetResultValue(out var barcode))
                 {
-                    return  BarcodeParameter.FromSuccess(barcode.Value,barcode.Rect);
+                    return BarcodeParameter.FromSuccess(barcode.Value, barcode.Rect);
                 }
                 return BarcodeParameter.FromUnableRed();
             });
 
-            if(result.IsSucces)
+            if (result.IsSucces)
             {
                 return result;
             }
@@ -70,12 +63,12 @@ namespace ImageManagement.Extenstion
                     if (strechResult.IsSucces)
                     {
                         var prevRect = new Rectangle(
-                                (int)(strechResult.Rectangles.X/ ImageManagementDefine.STRECH_WIDTH),
+                                (int)(strechResult.Rectangles.X / ImageManagementDefine.STRECH_WIDTH),
                                 strechResult.Rectangles.Y,
                                 (int)(strechResult.Rectangles.Width / ImageManagementDefine.STRECH_WIDTH),
                                 strechResult.Rectangles.Height
                             );
-                        return BarcodeParameter.FromSuccess(strechResult.Value, prevRect,true);
+                        return BarcodeParameter.FromSuccess(strechResult.Value, prevRect, true);
                     }
                     return strechResult;
                 });
@@ -106,15 +99,15 @@ namespace ImageManagement.Extenstion
             foreach (var shreddeddImage in images.OfType<Bitmap>())
             {
                 index += 1;
-                var result = BarcodeImageReader.BarcodeReader.ReadFromBitmap(shreddeddImage);
+                var result = BarcodeReader.ReadFromBitmap(shreddeddImage);
                 resultList.Add(result);
             }
             if (resultList.Count == 0)
             {
                 return null;
             }
-            var key = resultList.Where(t=>t.IsSuccessRead).
-                Select(t=> t.TryGetResultValue(out var buffer) ? buffer.Value : "").
+            var key = resultList.Where(t => t.IsSuccessRead).
+                Select(t => t.TryGetResultValue(out var buffer) ? buffer.Value : "").
                 GroupBy(t => t).
                 Aggregate((a, b) => a.Count() > b.Count() ? a : b).
                 Key;
@@ -132,12 +125,13 @@ namespace ImageManagement.Extenstion
         /// <param name="valueKey"></param>
         /// <param name="shreddedHeight"></param>
         /// <returns></returns>
-        internal static Rectangle GetHorizontalShreddedRect(IEnumerable<IBarcodeItem> items,string valueKey,int shreddedHeight)
+        internal static Rectangle GetHorizontalShreddedRect(IEnumerable<IBarcodeItem> items, string valueKey, int shreddedHeight)
         {
-            var records = items.Where(t=>t.IsSuccessRead).Select((t, index) =>{
+            var records = items.Where(t => t.IsSuccessRead).Select((t, index) =>
+            {
                 t.TryGetResultValue(out var resultValue);
-                return new { index = index, item = resultValue };
-                });
+                return new { index, item = resultValue };
+            });
             var posX = records.Where(t => t is not null && t.item.Value == valueKey).Min(t => t.item.Rect.X);
             var posY = records.Where(t => t.item is not null).Min(t => t.index) * shreddedHeight;
             var width = records.Where(t => t is not null && t.item.Value == valueKey).Select(t => t.item.Rect.Width + t.item.Rect.X).Max() - posX;
@@ -151,7 +145,7 @@ namespace ImageManagement.Extenstion
         /// <param name="outputDirictryName"></param>
         /// <param name="filename"></param>
         /// <returns></returns>
-        internal static async Task<string> ChangeFileName(this IPageItem pageItem,string outputDirictryName,string filename)
+        internal static async Task<string> ChangeFileName(this IPageItem pageItem, string outputDirictryName, string filename)
         {
             if (pageItem.IsBusy)
             {
@@ -159,14 +153,14 @@ namespace ImageManagement.Extenstion
                 while (pageItem.IsBusy)
                 {
                     await Task.Delay(500);
-                    if(loopCounter == 10)
+                    if (loopCounter == 10)
                     {
                         return string.Empty;
                     }
                     loopCounter++;
                 }
             }
-            var newFilepath=System.IO.Path.Combine(outputDirictryName,filename);
+            var newFilepath = Path.Combine(outputDirictryName, filename);
             return newFilepath;
         }
     }

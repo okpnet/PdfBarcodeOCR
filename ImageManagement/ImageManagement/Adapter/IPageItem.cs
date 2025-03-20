@@ -1,5 +1,5 @@
 ﻿using ImageManagement.Base;
-using PdfToImage;
+using PdfConverer.PdfProcessing;
 
 namespace ImageManagement.Adapter
 {

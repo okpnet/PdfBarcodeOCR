@@ -1,6 +1,6 @@
 ﻿using ImageManagement.Adapter;
 using ImageManagement.Base;
-using PdfToImage;
+using PdfConverer.PdfProcessing;
 using System.Collections.ObjectModel;
 
 namespace ImageManagement.Collection

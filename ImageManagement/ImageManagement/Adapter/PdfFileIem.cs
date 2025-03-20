@@ -1,4 +1,4 @@
-﻿using PdfToImage;
+﻿using PdfConverer.PdfProcessing;
 
 namespace ImageManagement.Adapter
 {

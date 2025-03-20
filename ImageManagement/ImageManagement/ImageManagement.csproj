@@ -24,7 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\BarcodeImageReader\BarcodeImageReader\BarcodeImageReader.csproj" />
     <ProjectReference Include="..\..\ImageShredded\ImageShredded\ImageShredded.csproj" />
-    <ProjectReference Include="..\..\PdfToImage\PdfToImage\PdfToImage.csproj" />
+    <ProjectReference Include="..\..\PdfConverer\PdfConverer\PdfConverer.csproj" />
   </ItemGroup>
 
   <ItemGroup>

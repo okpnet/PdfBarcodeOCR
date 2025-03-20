@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ImageManagement.Extenstion
+namespace ImageManagement.Helper
 {
     public static class StringExtension
     {
@@ -13,9 +13,10 @@ namespace ImageManagement.Extenstion
             try
             {
                 return File.Exists(path);
-            }catch 
+            }
+            catch
             {
-                return false; 
+                return false;
             }
         }
     }
