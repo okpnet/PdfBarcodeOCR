@@ -18,15 +18,21 @@ namespace ImageManagement.Extenstion
         /// </summary>
         /// <param name="bitmap"></param>
         /// <returns></returns>
-        public static async Task<BarcodeResult?> GetBarcodeResult(this Bitmap bitmap)
+        public static async Task<BarcodeParameter> GetBarcodeResult(this Bitmap bitmap)
         {
-            var result = await Task.Run(() =>
+            
+            BarcodeParameter result = default!;
+            result = await Task.Run(() =>
             {
                 var result = BarcodeReader.ReadFromBitmap(bitmap);
-                return result is null ? null : new BarcodeResult(result.Value);
+                if(result.TryGetResultValue(out var barcode))
+                {
+                    return  BarcodeParameter.FromSuccess(barcode.Value,barcode.Rect);
+                }
+                return BarcodeParameter.FromUnableRed();
             });
 
-            if(result is not null)
+            if(result.IsSucces)
             {
                 return result;
             }
@@ -37,22 +43,14 @@ namespace ImageManagement.Extenstion
             {
                 images = ImageShredded.BmpShredded.GetHorizotalShredded(bitmap, ImageManagementDefine.SHREDDED_HEIGHT).ToArray();
                 //2回目。千切りにして読みやすくする
-                var result2 = await Task.Run(() =>
-                {
-                    var shreddedTryResult = images.OfType<Bitmap>().GetBarcodeValueShreddedHorizontal(ImageManagementDefine.SHREDDED_HEIGHT);
-                    if (shreddedTryResult is null)
-                    {
-                        return null;
-                    }
-                    return shreddedTryResult;
-                });
+                result = await Task.Run(() => images.OfType<Bitmap>().GetBarcodeValueShreddedHorizontal(ImageManagementDefine.SHREDDED_HEIGHT));
 
-                if (result2 is not null)
+                if (result.IsSucces)
                 {
-                    return result2;
+                    return result;
                 }
 
-                var result3 = await Task.Run(() =>
+                result = await Task.Run(() =>
                 {
                     //3回目。千切りを引き延ばして空白スペースを確保する
                     var strechImages = images.Select(t =>
@@ -68,10 +66,21 @@ namespace ImageManagement.Extenstion
                     {
                         strechImage.Dispose();
                     }
+
+                    if (strechResult.IsSucces)
+                    {
+                        var prevRect = new Rectangle(
+                                (int)(strechResult.Rectangles.X/ ImageManagementDefine.STRECH_WIDTH),
+                                strechResult.Rectangles.Y,
+                                (int)(strechResult.Rectangles.Width / ImageManagementDefine.STRECH_WIDTH),
+                                strechResult.Rectangles.Height
+                            );
+                        return BarcodeParameter.FromSuccess(strechResult.Value, prevRect,true);
+                    }
                     return strechResult;
                 });
 
-                return result3;//Nullなら読み込めていない
+                return result;
 
             }
             finally
@@ -90,9 +99,9 @@ namespace ImageManagement.Extenstion
         /// <param name="images"></param>
         /// <param name="shreddedpixel"></param>
         /// <returns></returns>
-        internal static BarcodeResult? GetBarcodeValueShreddedHorizontal(this IEnumerable<Bitmap> images, int shreddedHeight)
+        internal static BarcodeParameter GetBarcodeValueShreddedHorizontal(this IEnumerable<Bitmap> images, int shreddedHeight)
         {
-            var resultList = new List<IResultItem?>(images.Count());
+            var resultList = new List<IBarcodeItem>(images.Count());
             var index = 0;
             foreach (var shreddeddImage in images.OfType<Bitmap>())
             {
@@ -104,10 +113,15 @@ namespace ImageManagement.Extenstion
             {
                 return null;
             }
-            var key = resultList.GroupBy(t => t.Value).Aggregate((a, b) => a.Count() > b.Count() ? a : b).Key;
-            return new BarcodeResult(
+            var key = resultList.Where(t=>t.IsSuccessRead).
+                Select(t=> t.TryGetResultValue(out var buffer) ? buffer.Value : "").
+                GroupBy(t => t).
+                Aggregate((a, b) => a.Count() > b.Count() ? a : b).
+                Key;
+            return BarcodeParameter.FromSuccess(
                 key,
-                GetHorizontalShreddedRect(resultList, key, shreddedHeight)
+                GetHorizontalShreddedRect(resultList, key, shreddedHeight),
+                true
                 );
         }
 
@@ -118,13 +132,16 @@ namespace ImageManagement.Extenstion
         /// <param name="valueKey"></param>
         /// <param name="shreddedHeight"></param>
         /// <returns></returns>
-        internal static Rectangle GetHorizontalShreddedRect(IEnumerable<IResultItem?> items,string valueKey,int shreddedHeight)
+        internal static Rectangle GetHorizontalShreddedRect(IEnumerable<IBarcodeItem> items,string valueKey,int shreddedHeight)
         {
-            var records = items.Select((t, index) => new { index = index, item = t });
-            var posX = items.Where(t => t is not null && t.Value == valueKey).Min(t => t!.Rect.X);
+            var records = items.Where(t=>t.IsSuccessRead).Select((t, index) =>{
+                t.TryGetResultValue(out var resultValue);
+                return new { index = index, item = resultValue };
+                });
+            var posX = records.Where(t => t is not null && t.item.Value == valueKey).Min(t => t.item.Rect.X);
             var posY = records.Where(t => t.item is not null).Min(t => t.index) * shreddedHeight;
-            var width = items.Where(t => t is not null && t.Value == valueKey).Select(t => t.Rect.Width + t.Rect.X).Max() - posX;
-            var height = records.Where(t => t.item is not null).Max(t => t.index) * shreddedHeight - posY;
+            var width = records.Where(t => t is not null && t.item.Value == valueKey).Select(t => t.item.Rect.Width + t.item.Rect.X).Max() - posX;
+            var height = records.Where(t => t is not null && t.item is not null).Max(t => t.index) * shreddedHeight - posY;
             return new Rectangle(posX, posY, width, height);
         }
         /// <summary>

@@ -1,8 +1,8 @@
 ﻿using System.Drawing;
 
-namespace PdfToImage
+namespace PdfConverer.PdfProcessing
 {
-    public interface IPdfPage:IDisposable
+    public interface IPdfPage : IDisposable
     {
         int PageNumber { get; }
 

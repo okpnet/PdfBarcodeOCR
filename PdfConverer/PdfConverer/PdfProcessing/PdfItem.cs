@@ -3,12 +3,12 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
-namespace PdfToImage
+namespace PdfConverer.PdfProcessing
 {
     /// <summary>
     /// 
     /// </summary>
-    public class PdfItem:IPdf,IPdfFile,IDisposable
+    public class PdfItem : IPdf, IPdfFile, IDisposable
     {
         const int THUMB_RATIO = 168;
         /// <summary>
@@ -26,7 +26,7 @@ namespace PdfToImage
         /// <summary>
         /// ページアイテム
         /// </summary>
-        private IList<IPdfPage> _pdfItems=[];
+        private IList<IPdfPage> _pdfItems = [];
         /// <summary>
         /// ページアイテム
         /// </summary>
@@ -56,7 +56,7 @@ namespace PdfToImage
         {
             get
             {
-                if( 0 > pageIndex || pageIndex > NumberOfPage)
+                if (0 > pageIndex || pageIndex > NumberOfPage)
                 {
                     return null;
                 }
@@ -64,7 +64,7 @@ namespace PdfToImage
             }
         }
 
-        internal PdfDocument? Document 
+        internal PdfDocument? Document
         {
             get
             {
@@ -77,17 +77,17 @@ namespace PdfToImage
         /// <param name="filePath"></param>
         public PdfItem(string filePath)
         {
-            _filePath = System.IO.Path.GetTempFileName();
-            System.IO.File.Copy(filePath, _filePath, true);
+            _filePath = Path.GetTempFileName();
+            File.Copy(filePath, _filePath, true);
         }
 
-        public PdfItem(string filePath,string tmpPath)
+        public PdfItem(string filePath, string tmpPath)
         {
             _filePath = tmpPath;
-            System.IO.File.Copy(filePath, _filePath, true);
+            File.Copy(filePath, _filePath, true);
         }
 
-        public async Task InitilizePageAsync(IProgress<(int,int)>? progress=null)
+        public async Task InitilizePageAsync(IProgress<(int, int)>? progress = null)
         {
             if (isInit)
             {
@@ -97,7 +97,7 @@ namespace PdfToImage
             if (pdfDoc is not null)
             {
                 NumberOfPage = pdfDoc.PageCount;
-                
+
                 await Task.Run(() =>
                 {
                     for (var pageIndex = 0; NumberOfPage > pageIndex; pageIndex++)
@@ -109,7 +109,7 @@ namespace PdfToImage
             }
             else
             {
-                System.IO.File.Delete(_filePath!);
+                File.Delete(_filePath!);
                 _filePath = null;
                 _baseFilePath = null;
             }
@@ -121,16 +121,16 @@ namespace PdfToImage
         /// <param name="page"></param>
         /// <returns></returns>
 
-        public async Task<Image?> GetImageAsync(int page=0)
+        public async Task<Image?> GetImageAsync(int page = 0)
         {
-            if(page>=NumberOfPage ||  0 > page)
+            if (page >= NumberOfPage || 0 > page)
             {
                 return null;
             }
             using var pdfDoc = PdfDocument.Load(_filePath);
             if (this[page] is PdfItemPage pdfPage)
             {
-                return await Task.Run(()=>pdfPage.GetImage());
+                return await Task.Run(() => pdfPage.GetImage());
             }
             return null;
         }
@@ -157,25 +157,25 @@ namespace PdfToImage
         /// <returns></returns>
         public IEnumerable<IPageImage> AllPageImages()
         {
-            var pdfDoc=PdfDocument.Load(_filePath);
-            if(pdfDoc is null)
+            var pdfDoc = PdfDocument.Load(_filePath);
+            if (pdfDoc is null)
             {
                 yield break;
             }
-            foreach(var page in Pages.OfType<PdfItemPage>())
+            foreach (var page in Pages.OfType<PdfItemPage>())
             {
-                var image=page.GetImage();
-                if (image is not null) yield return new PageImage(page,image);
+                var image = page.GetImage();
+                if (image is not null) yield return new PageImage(page, image);
             }
         }
 
         public void Dispose()
         {
-            if(System.IO.File.Exists(_filePath))
+            if (File.Exists(_filePath))
             {
-                System.IO.File.Delete(_filePath);
+                File.Delete(_filePath);
             }
-            foreach(var page in Pages)
+            foreach (var page in Pages)
             {
                 page.Dispose();
             }

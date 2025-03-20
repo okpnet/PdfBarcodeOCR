@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PdfToImage
+namespace PdfConverer.PdfProcessing
 {
-    public interface IPdfPageSave:IPdfPage
+    public interface IPdfPageSave : IPdfPage
     {
         bool SaveImage(string filepath, ImageFormat format);
     }

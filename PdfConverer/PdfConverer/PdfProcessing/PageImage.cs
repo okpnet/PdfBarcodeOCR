@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PdfToImage
+namespace PdfConverer.PdfProcessing
 {
-    public class PageImage: IPageImage,IDisposable
+    public class PageImage : IPageImage, IDisposable
     {
         public IPdfPage Page { get; }
 

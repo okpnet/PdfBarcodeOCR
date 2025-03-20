@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PdfToImage
+namespace PdfConverer.PdfProcessing
 {
-    public interface IPdfFile:IPdf
+    public interface IPdfToImage
     {
-        string? FilePath { get; }
+        Bitmap FromFile(string filename);
     }
 }

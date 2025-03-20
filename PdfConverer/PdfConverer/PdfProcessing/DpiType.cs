@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PdfToImage
+namespace PdfConverer.PdfProcessing
 {
-    public enum DpiType:uint
+    public enum DpiType : uint
     {
         DPI100 = 100,
         DPI200 = 200,

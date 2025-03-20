@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PdfToImage\PdfToImage.csproj" />
+    <ProjectReference Include="..\PdfConverer\PdfConverer.csproj" />
   </ItemGroup>
 
   <ItemGroup>

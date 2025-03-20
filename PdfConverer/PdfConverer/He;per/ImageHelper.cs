@@ -2,7 +2,7 @@
 
 namespace PdfToImage.Extension
 {
-    public static class ImageExtension
+    public static class ImageHelper
     {
         /// <summary>
         /// 
