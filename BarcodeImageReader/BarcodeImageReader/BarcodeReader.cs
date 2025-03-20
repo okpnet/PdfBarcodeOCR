@@ -8,33 +8,34 @@ namespace BarcodeImageReader
 {
     public static class BarcodeReader
     {
-        public static IBarcodeItem? ReadFromFile(string imagePath)
+        public static IBarcodeItem ReadFromFile(string imagePath)
         {
             if (!System.IO.File.Exists(imagePath))
             {
-                return null;
+                return BarcodeItem.FromUnableToRead();
             }
             using var image=Image.FromFile(imagePath);
             if(image is null)
             {
-                return null;
+                return BarcodeItem.FromUnableToRead();
             }
             return ReadFromImage(image);
         }
 
-        public static IBarcodeItem? ReadFromImage(System.Drawing.Image image)
+        public static IBarcodeItem ReadFromImage(System.Drawing.Image image)
         {
+            if(image is Bitmap bitmap)
+            {
+                return ReadFromBitmap(bitmap);
+            }
+
             using var memoryStream= new MemoryStream();
             image.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Bmp);
-            if (memoryStream.Length == 0)
-            {
-                return null;
-            }
-            var bmap = new Bitmap(memoryStream);
+            using var bmap = new Bitmap(memoryStream);
             return ReadFromBitmap(bmap);
         }
 
-        public static IBarcodeItem? ReadFromBitmap(Bitmap bitmap)
+        public static IBarcodeItem ReadFromBitmap(Bitmap bitmap)
         {
             try
             {
@@ -43,12 +44,12 @@ namespace BarcodeImageReader
                 var source = new BitmapLuminanceSource(rebitmap);
                 reader.Options.TryInverted = true;
                 var result = reader.Decode(source);
-                return result is null ? null : new BarcodeItem(result);
+                return result is null ? BarcodeItem.FromUnableToRead() : BarcodeItem.FromResult(new BarcodeResult(result));
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message);
-                return null;
+                return BarcodeItem.FromException(new BarcodeReadException(ex));
             }
         }
 

@@ -1,32 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace BarcodeImageReader
 {
-    public class BarcodeItem : IBarcodeItem
+    public class BarcodeItem: IBarcodeItem
     {
-        public Rectangle Rect { get; }
+        private readonly IBarcodeResult? _resultValue;
+        private readonly BarcodeReadException? _barcodeReadException;
 
-        public string Value { get; }
+        public bool HasException => _barcodeReadException is not null;
+        public bool HasResultValue => _resultValue is not null;
+        public bool IsSuccessRead=> _resultValue is not null;
 
-        public BarcodeItem(Rectangle rect, string value)
+        private BarcodeItem(IBarcodeResult? resultValue, BarcodeReadException? barcodeReadException)
         {
-            Rect = rect;
-            Value = value;
+            _resultValue = resultValue;
+            _barcodeReadException = barcodeReadException;
         }
 
-        public BarcodeItem(ZXing.Result readResut)
+        public static BarcodeItem FromResult(IBarcodeResult resultValue) => new(resultValue, null);
+        public static BarcodeItem FromException(BarcodeReadException barcodeReadException) => new(null, barcodeReadException);
+        public static BarcodeItem FromUnableToRead() => new(null, null);
+        public bool TryGetResultValue(out IBarcodeResult barcodeItem)
         {
-            Value = readResut.Text;
-            Rect = new Rectangle(
-                (int)readResut.ResultPoints.Min(t => t.X),
-                (int)readResut.ResultPoints.Min(t => t.Y),
-                (int)(readResut.ResultPoints.Max(t => t.X) - readResut.ResultPoints.Min(t => t.X)),
-                (int)(readResut.ResultPoints.Max(t => t.Y) - readResut.ResultPoints.Min(t => t.Y)));
+            barcodeItem = default!;
+            if (_resultValue is null)
+            {
+                return false;
+            }
+            barcodeItem = _resultValue;
+            return true;
+        }
+
+        public bool TryGetException(out BarcodeReadException barcodeReadException)
+        {
+            barcodeReadException = default!;
+            if (_barcodeReadException is null)
+            {
+                return false;
+            }
+            barcodeReadException = _barcodeReadException;
+            return true;
         }
     }
+
 }

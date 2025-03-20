@@ -35,11 +35,11 @@ namespace BarcodeImageReader.Tests
                 grph.DrawImage(bitmap, new Rectangle(0, 0, strechWidth, height));
 
                 var result = BarcodeReader.ReadFromImage(image);
-                if (result is null)
+                if (!result.TryGetResultValue(out var value))
                 {
                     continue;
                 }
-                results.Add(result);
+                results.Add(value.Value);
             }
             var a = results.GroupBy((key) => key).Select(t => new { key = t.Key, count = t.Count() }).OrderByDescending(t => t.count).FirstOrDefault();
             if (results.Count == 0)
