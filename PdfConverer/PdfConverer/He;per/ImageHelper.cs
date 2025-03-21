@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace PdfToImage.Extension
+namespace PdfConverer.Helper
 {
     public static class ImageHelper
     {
@@ -14,11 +14,11 @@ namespace PdfToImage.Extension
         /// サムネイル生成
         /// </summary>
         /// <param name="image"></param>
-        /// <param name="ratio">スケールの縮尺率</param>
+        /// <param name="maxsize"></param>
         /// <returns></returns>
-        public static Image CreateThumbnail(this Image image, int ratio)
+        public static Image CreateThumbnail(this Image image, int maxsize)
         {
-            var size=image.ChangeScaleRatio(ratio);
+            var size=image.ChangeScaleRatio(maxsize);
             return image.GetThumbnailImage(size.Width,size.Height,null,IntPtr.Zero);
         }
     }

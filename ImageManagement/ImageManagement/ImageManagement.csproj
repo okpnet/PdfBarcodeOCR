@@ -4,6 +4,7 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AssemblyName>imgsrvlib</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,10 +26,6 @@
     <ProjectReference Include="..\..\BarcodeImageReader\BarcodeImageReader\BarcodeImageReader.csproj" />
     <ProjectReference Include="..\..\ImageShredded\ImageShredded\ImageShredded.csproj" />
     <ProjectReference Include="..\..\PdfConverer\PdfConverer\PdfConverer.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Service\" />
   </ItemGroup>
 
 </Project>

@@ -24,17 +24,24 @@ namespace ImageManagement.Collection
 
         public bool IsBusy { get; set; }
 
-        public async Task AddItem(string filePath, IProgress<(int, int)>? progress = null)
+        public async Task AddItemAsync(string filePath, IProgress<(int, int)>? progress = null)
         {
             if (!File.Exists(filePath)) return;
-            var tmpPath = Path.Combine(TmpDir, Guid.NewGuid().ToString());
-            var item = new PdfItem(filePath, tmpPath);
-            _pdfList.Add(item);
-            await item.InitilizePageAsync();
-            foreach (var page in item.Pages)
+            try{
+                IsBusy = true;
+                var tmpPath = Path.Combine(TmpDir, Guid.NewGuid().ToString());
+                var item = new PdfItem(filePath, tmpPath);
+                _pdfList.Add(item);
+                await item.InitilizePageAsync();
+                foreach (var page in item.Pages)
+                {
+                    var addItem = new PdfPageAdpter(this, page);
+                    Add(addItem);
+                }
+            }
+            finally
             {
-                var addItem = new PdfFileIem(this, page);
-                Add(addItem);
+                IsBusy = false;
             }
         }
 
@@ -43,7 +50,7 @@ namespace ImageManagement.Collection
             var tasks = new List<Task>();
             foreach (var filePath in filePaths)
             {
-                tasks.Add(AddItem(filePath, progress));
+                tasks.Add(AddItemAsync(filePath, progress));
             }
             await Task.WhenAll(tasks);
         }

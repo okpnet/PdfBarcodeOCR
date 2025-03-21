@@ -1,17 +1,18 @@
-﻿using System.Drawing;
+﻿using PdfConverer.ImageProcessing;
+using System.Drawing;
 
 namespace PdfConverer.PdfProcessing
 {
     public interface IPdfPage : IDisposable
     {
+        public IPdf Parent { get; }
+
         int PageNumber { get; }
 
         SizeF Size { get; }
 
-        Image? Thumbnail { get; set; }
+        IImageDecorator? Decorator { get; }
 
         void Redraw();
-
-        Image? GetImage();
     }
 }

@@ -1,5 +1,5 @@
-﻿using PdfiumViewer;
-using PdfToImage.Extension;
+﻿using PdfConverer.ImageProcessing;
+using PdfiumViewer;
 using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -14,10 +14,6 @@ namespace PdfConverer.PdfProcessing
     public class PdfItemPage : IPdfPage, IPdfPageSave, IDisposable
     {
         /// <summary>
-        /// ページのビットマップイメージファイル
-        /// </summary>
-        private readonly string _imagePath;
-        /// <summary>
         /// 従属するPDF
         /// </summary>
         public IPdf Parent { get; }
@@ -31,9 +27,9 @@ namespace PdfConverer.PdfProcessing
         /// </summary>
         public SizeF Size { get; }
         /// <summary>
-        /// サムネイル
+        /// イメージ
         /// </summary>
-        public Image? Thumbnail { get; set; }
+        public IImageDecorator Decorator { get; protected set; }
 
         public PdfItemPage(PdfItem paretn, PdfDocument document, int page, string parentPdfItemPath)
         {
@@ -50,10 +46,9 @@ namespace PdfConverer.PdfProcessing
             var dirPath = Path.GetDirectoryName(parentPdfItemPath);
             var filename = Path.GetFileNameWithoutExtension(parentPdfItemPath);
             var imagePath = Path.Combine(dirPath!, filename, $"_{PageNumber}");
-            _imagePath = imagePath;
             using var image = document.Render(PageNumber, (int)Parent.Dpi, (int)Parent.Dpi, PdfRenderFlags.CorrectFromDpi);
-            image.Save(_imagePath, ImageFormat.Bmp);
-            Thumbnail = image.CreateThumbnail(Parent.ThumbnailRatio);
+            image.Save(imagePath, ImageFormat.Bmp);
+            Decorator = ImageDecorator.Create(imagePath, PdfConverterDfine.THUMBNAIL_MAX_SIDLEN);
         }
         /// <summary>
         /// 再描画。DPIやサムネイルのレートを変えたときに、一次保存したPDFページイメージを作り直す
@@ -64,57 +59,28 @@ namespace PdfConverer.PdfProcessing
             {
                 return;
             }
+            var imagepath = Decorator.ImageFilePath;
             using var image = pdfitem.Document.Render(PageNumber, (int)Parent.Dpi, (int)Parent.Dpi, PdfRenderFlags.CorrectFromDpi);
-            image.Save(_imagePath, ImageFormat.Bmp);
-            Thumbnail?.Dispose();
-            Thumbnail = image.CreateThumbnail(Parent.ThumbnailRatio);
-        }
-
-        public Image? GetImage()
-        {
-            if (!File.Exists(_imagePath))
+            image.Save(imagepath, ImageFormat.Bmp);
+            if(Decorator is IDisposable disposable)
             {
-                return null;
+                disposable.Dispose();
             }
-            var image = new Bitmap(_imagePath);
-            return image;
+            Decorator = ImageDecorator.Create(imagepath, PdfConverterDfine.THUMBNAIL_MAX_SIDLEN);
         }
 
         public bool SaveImage(string filepath, ImageFormat format)
         {
-            if (!Path.IsPathFullyQualified(filepath) || !File.Exists(_imagePath))
-            {
-                return false;
-            }
-
-            using var image = new Bitmap(_imagePath); ;
+            using var image = Decorator.GetImage();
             image.Save(filepath, format);
             return true;
         }
 
-        internal void SaveImage(PdfDocument pdfDocument, string filepath, ImageFormat format)
-        {
-            if (0 > PageNumber)
-            {
-                return;
-            }
-            if (!Path.IsPathFullyQualified(filepath))
-            {
-                return;
-            }
-            var image = pdfDocument.Render(PageNumber, (int)Parent.Dpi, (int)Parent.Dpi, PdfRenderFlags.CorrectFromDpi);
-            image?.Save(filepath, format);
-        }
-
         public void Dispose()
         {
-            if (File.Exists(_imagePath))
+            if(Decorator is IDisposable disposable)
             {
-                File.Delete(_imagePath);
-            }
-            if (Thumbnail is not null)
-            {
-                Thumbnail.Dispose();
+                disposable.Dispose();
             }
         }
     }

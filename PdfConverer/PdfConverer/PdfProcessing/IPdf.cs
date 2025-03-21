@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing;
 
 namespace PdfConverer.PdfProcessing
 {
@@ -21,6 +16,6 @@ namespace PdfConverer.PdfProcessing
 
         Task<Image?> GetImageAsync(int page = 0);
 
-        IEnumerable<IPageImage> AllPageImages();
+        void Remove(IPdfPage page);
     }
 }

@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace PdfConverer.PdfProcessing
 {
-    public interface IPageImage
+    public static class PdfConverterDfine
     {
-        IPdfPage Page { get; }
-
-        Image Images { get; }
+        public const int THUMBNAIL_MAX_SIDLEN = 100; 
     }
 }

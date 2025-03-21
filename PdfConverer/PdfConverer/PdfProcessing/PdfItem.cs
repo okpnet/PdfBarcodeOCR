@@ -115,6 +115,7 @@ namespace PdfConverer.PdfProcessing
             }
         }
 
+
         /// <summary>
         /// 指定ページのイメージを取得
         /// </summary>
@@ -127,10 +128,12 @@ namespace PdfConverer.PdfProcessing
             {
                 return null;
             }
+            
             using var pdfDoc = PdfDocument.Load(_filePath);
-            if (this[page] is PdfItemPage pdfPage)
+
+            if (this[page]?.Decorator is not null)
             {
-                return await Task.Run(() => pdfPage.GetImage());
+                return await Task.Run(() => this[page]!.Decorator!.GetImage());
             }
             return null;
         }
@@ -143,30 +146,19 @@ namespace PdfConverer.PdfProcessing
         /// <returns></returns>
         public async Task SaveImageAsync(int page, string filepath, ImageFormat format)
         {
-            using var pdfDoc = PdfDocument.Load(_filePath);
             if (this[page] is PdfItemPage pdfPage)
             {
-                await Task.Run(() => pdfPage.SaveImage(pdfDoc, filepath, format));
+                await Task.Run(() => pdfPage.SaveImage(filepath, format));
             }
         }
-
         /// <summary>
-        /// すべてのページのイメージを取得
-        /// 全ページをイメージとして保存するとき、ファイル名のパターンが限定されるためImageインスタンスを返す
+        /// ページ削除
         /// </summary>
-        /// <returns></returns>
-        public IEnumerable<IPageImage> AllPageImages()
+        /// <param name="page"></param>
+        public void Remove(IPdfPage page)
         {
-            var pdfDoc = PdfDocument.Load(_filePath);
-            if (pdfDoc is null)
-            {
-                yield break;
-            }
-            foreach (var page in Pages.OfType<PdfItemPage>())
-            {
-                var image = page.GetImage();
-                if (image is not null) yield return new PageImage(page, image);
-            }
+            page.Dispose();
+            _pdfItems.Remove(page);
         }
 
         public void Dispose()

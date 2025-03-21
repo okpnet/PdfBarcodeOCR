@@ -2,11 +2,9 @@
 
 namespace ImageManagement.Adapter
 {
-    public class PdfFileIem : IPageItem
+    public class PdfPageAdpter : IPageItem,IDisposable
     {
         protected readonly IParentPdfFileItem _parent;
-
-        public bool IsInitialized { get; protected set; }
         /// <summary>
         /// PDFのアイテム
         /// </summary>
@@ -14,11 +12,15 @@ namespace ImageManagement.Adapter
 
         public bool IsBusy { get; protected set; }
 
-        public PdfFileIem(IParentPdfFileItem parent, IPdfPage pdfPage)
+        public PdfPageAdpter(IParentPdfFileItem parent, IPdfPage pdfPage)
         {
-            IsInitialized = false;
             _parent = parent;
             PdfPages = pdfPage;
+        }
+
+        public void Dispose()
+        {
+            if(IPd)
         }
     }
 }
