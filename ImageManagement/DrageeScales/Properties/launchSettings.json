@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "DrageeScales (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "DrageeScales (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
