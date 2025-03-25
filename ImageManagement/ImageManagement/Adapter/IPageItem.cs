@@ -12,7 +12,10 @@ namespace ImageManagement.Adapter
         /// PDFのアイテム
         /// </summary>
         IPdfPage? PdfPages { get; }
-
-   
+        /// <summary>
+        /// ファイル名
+        /// 保存するときに使用
+        /// </summary>
+        string FileNameToSave { get; set; }
     }
 }

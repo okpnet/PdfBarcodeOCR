@@ -19,7 +19,9 @@ namespace ImageManagement.Collection
         /// 一時フォルダ
         /// </summary>
         public string TmpDir { get; protected set; } = Path.GetTempPath();
-
+        /// <summary>
+        /// PDFのページをコレクション
+        /// </summary>
         public IEnumerable<IPageItem> PdfFileItems => this;
 
         public bool IsBusy { get; set; }

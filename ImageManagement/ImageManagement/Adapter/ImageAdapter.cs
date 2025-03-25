@@ -76,5 +76,9 @@ namespace ImageManagement.Adapter
             return new Bitmap(stream);
         }
 
+        public void Dispose()
+        {
+            _thumbnailImage.Dispose();
+        }
     }
 }
