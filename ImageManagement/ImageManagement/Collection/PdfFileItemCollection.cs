@@ -8,7 +8,7 @@ namespace ImageManagement.Collection
     /// <summary>
     /// バインドするPDFページのコレクション
     /// </summary>
-    public class PdfFileItemCollection : ObservableCollection<IPageItem>, IParentPdfFileItem, IPdfFileItemCollection, IDisposable, IProcessingModel
+    public class PdfFileItemCollection : ObservableCollection<PdfPageAdpter>, IParentPdfFileItem, IPdfFileItemCollection, IDisposable, IProcessingModel
     {
         private IList<IPdf> _pdfList = new List<IPdf>();
         /// <summary>
@@ -22,7 +22,7 @@ namespace ImageManagement.Collection
         /// <summary>
         /// PDFのページをコレクション
         /// </summary>
-        public IEnumerable<IPageItem> PdfFileItems => this;
+        public IEnumerable<PdfPageAdpter> PdfFileItems => this;
 
         public bool IsBusy { get; set; }
 

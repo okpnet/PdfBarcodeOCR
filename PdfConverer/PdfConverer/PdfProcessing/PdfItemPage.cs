@@ -1,5 +1,6 @@
 ﻿using PdfConverer.ImageProcessing;
 using PdfiumViewer;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -11,8 +12,14 @@ namespace PdfConverer.PdfProcessing
     /// PDFのページイメージ
     /// PDFのビットマップイメージを生成する
     /// </summary>
-    public class PdfItemPage : IPdfPage, IPdfPageSave, IDisposable
+    public class PdfItemPage : IPdfPage, IPdfPageSave, IDisposable,INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
         /// <summary>
         /// 従属するPDF
         /// </summary>
@@ -26,10 +33,24 @@ namespace PdfConverer.PdfProcessing
         /// ページのサイズ
         /// </summary>
         public SizeF Size { get; }
+
+        IImageDecorator _decorator;
         /// <summary>
         /// イメージ
         /// </summary>
-        public IImageDecorator Decorator { get; protected set; }
+        public IImageDecorator Decorator 
+        {
+            get => _decorator;
+            protected set
+            {
+                if(ReferenceEquals(_decorator, value))
+                {
+                    return;
+                }
+                _decorator = value;
+                OnPropertyChanged(nameof(Decorator));
+            }
+        }
 
         public PdfItemPage(PdfItem paretn, PdfDocument document, int page, string parentPdfItemPath)
         {

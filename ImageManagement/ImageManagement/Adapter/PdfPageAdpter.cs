@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace ImageManagement.Adapter
 {
-    public class PdfPageAdpter : IPageItem,IDisposable, INotifyPropertyChanged
+    public class PdfPageAdpter : IDisposable, INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged=null;
         protected readonly IParentPdfFileItem _parent;
@@ -58,6 +58,19 @@ namespace ImageManagement.Adapter
                 _isBusy = value;
                 OnPropertyChanged(nameof(IsBusy));
                 System.Diagnostics.Debug.WriteLine($"[UI] IsBusy = {IsBusy}");
+            }
+        }
+
+
+        public string? BaseFile 
+        {
+            get
+            {
+                if(PdfPages is null || PdfPages.Parent is not IPdfFile pdfFile)
+                {
+                    return string.Empty;
+                }
+                return System.IO.Path.GetFileNameWithoutExtension(pdfFile.FilePath);
             }
         }
 

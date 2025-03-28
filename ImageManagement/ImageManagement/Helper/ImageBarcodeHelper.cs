@@ -145,7 +145,7 @@ namespace ImageManagement.Helper
         /// <param name="outputDirictryName"></param>
         /// <param name="filename"></param>
         /// <returns></returns>
-        internal static async Task<string> ChangeFileName(this IPageItem pageItem, string outputDirictryName, string filename)
+        internal static async Task<string> ChangeFileName(this PdfPageAdpter pageItem, string outputDirictryName, string filename)
         {
             if (pageItem.IsBusy)
             {

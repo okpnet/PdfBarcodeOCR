@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="DrageeScales.Shared.Controls.OverlapModalProgressView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:DrageeScales.Shared.Controls"
+    xmlns:local2="using:DrageeScales.Shared.Dtos"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    x:DataType="local2:ProgressModalOption">
+
+    <Grid Visibility="{x:Bind ModalOption.IsModalVisible,Mode=OneWay}">
+        <Rectangle Fill="LightGray" Opacity="{x:Bind ModalOption.Opacity,Mode=OneWay}" ></Rectangle>
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <ProgressRing IsIndeterminate="False" Width="124" Height="124" Value="{x:Bind ModalOption.ProgressValue,Mode=OneWay}" ></ProgressRing>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
+                <TextBlock FontSize="24" Text="{x:Bind ModalOption.ProgressValue,Mode=OneWay}"></TextBlock>
+                <TextBlock FontSize="16" Text=" %"></TextBlock>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>
