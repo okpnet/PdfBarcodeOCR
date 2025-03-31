@@ -10,31 +10,22 @@
     mc:Ignorable="d"
     x:DataType="Manger:PdfPageAdpter">
 
-    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Width="280">
+    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Width="280" BorderThickness="5" BorderBrush="{x:Bind BorderColors}">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="0">
-                <Image Source="{x:Bind Pdf.PdfPages.Decorator.Thumbnail,Mode=OneWay}" Height="100" Width="100" Stretch="UniformToFill" VerticalAlignment="Center"></Image>
+                <Image Source="{x:Bind PdfAdapter.Thumbnail,Mode=OneWay}" Height="{x:Bind TumbnailSlideRate,Mode=OneWay}" Width="{x:Bind TumbnailSlideRate,Mode=OneWay}" Stretch="UniformToFill" VerticalAlignment="Center"></Image>
             </Grid>
-            <StackPanel Grid.Column = '1' Margin="8,0,0,8">
+            <StackPanel Grid.Column = '1' Margin="8,0,0,8" Orientation="Vertical" VerticalAlignment="Center">
                 <StackPanel Orientation = 'Horizontal'>
                     <TextBlock Text = '保存ファイル名' Style = '{ThemeResource CaptionTextBlockStyle}'/>
-                    <TextBox Text = '{x:Bind Pdf.FileNameToSave,Mode=TwoWay}' Style = '{ThemeResource CaptionTextBlockStyle}'/>
+                    <TextBox Text = '{x:Bind PdfAdapter.FileNameToSave,Mode=TwoWay}' Style = '{ThemeResource CaptionTextBlockStyle}'/>
                 </StackPanel>
-                <StackPanel Orientation = 'Horizontal'>
-                    <TextBlock Text = 'PDFファイル名' Style = '{ThemeResource CaptionTextBlockStyle}'/>
-                    <TextBlock Text = '{x:Bind Pdf.BaseFile,Mode=OneWay}' Style = '{ThemeResource CaptionTextBlockStyle}'/>
-                </StackPanel>
-                <StackPanel Orientation = 'Horizontal'>
-                    <TextBlock Text = 'ページ' Style = '{ThemeResource CaptionTextBlockStyle}'/>
-                    <TextBlock Text = '{x:Bind Pdf.PdfPages.PageNumber,Mode=OneWay}' Style = '{ThemeResource CaptionTextBlockStyle}'/>
-                </StackPanel>
-                
             </StackPanel>
         </Grid>
-        <ProgressBar IsIndeterminate="{x:Bind Pdf.IsBusy,Mode=OneWay}" ShowError="False" ShowPaused="False"></ProgressBar>
+        <ProgressBar IsIndeterminate="{x:Bind PdfAdapter.IsBusy,Mode=OneWay}" ShowError="False" ShowPaused="False"></ProgressBar>
     </StackPanel>
 </UserControl>

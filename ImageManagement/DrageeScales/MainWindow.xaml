@@ -4,11 +4,36 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:DrageeScales"
+    xmlns:shared="using:DrageeScales.Shared.Controls"
+    xmlns:collectionViews="using:DrageeScales.Views.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
-    </StackPanel>
+    <Grid Background="Transparent" AllowDrop="True" DragOver="Grid_DragOver" Drop="Grid_Drop">
+        <shared:OverlapModalProgressView ModalOption="{x:Bind ProgressModalOption}"></shared:OverlapModalProgressView>
+        <StackPanel Orientation="Vertical" VerticalAlignment="Top" x:Name="MainFrame">
+            <StackPanel Orientation="Horizontal" FlowDirection="LeftToRight">
+                <AppBarButton Label="開く" x:Name="OpenFileBtn" Click="OpenFileBtn_Click">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE838;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+                <AppBarButton Label="解析" x:Name="BarcodeAnalysisBtn" Click="BarcodeAnalysisBtn_Click">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xED14;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+                <AppBarButton Label="保存" x:Name="SaveBtn" IsEnabled="{x:Bind WindowModel.IsCollectionAny,Mode=OneWay}" Click="SaveBtn_Click">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE73E;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+            </StackPanel>
+            <Grid>
+                <collectionViews:FileItemCollectionView  x:Name="CollecionPanel"></collectionViews:FileItemCollectionView>
+            </Grid>
+        </StackPanel>
+        <shared:Toast Notifications="{x:Bind ToastItems,Mode=OneWay}" x:Name="ToastView"></shared:Toast>
+    </Grid>
 </Window>

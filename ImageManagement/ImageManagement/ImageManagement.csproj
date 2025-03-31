@@ -20,12 +20,14 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.3" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.3" />
+    <PackageReference Include="System.Reactive" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\CsCommonLibrary\WinImageShredded\ImageShredded\ImageShredded\ImageShredded.csproj" />
+    <ProjectReference Include="..\..\..\CsCommonLibrary\WinPdfConverter\PdfConverer\PdfConverer\PdfConverer.csproj" />
+    <ProjectReference Include="..\..\..\CsCommonLibrary\WinThumbnailHelper\WinThumbnailHelper\WinThumbnailHelper\WinThumbnailHelper.csproj" />
     <ProjectReference Include="..\..\BarcodeImageReader\BarcodeImageReader\BarcodeImageReader.csproj" />
-    <ProjectReference Include="..\..\ImageShredded\ImageShredded\ImageShredded.csproj" />
-    <ProjectReference Include="..\..\PdfConverer\PdfConverer\PdfConverer.csproj" />
   </ItemGroup>
 
 </Project>

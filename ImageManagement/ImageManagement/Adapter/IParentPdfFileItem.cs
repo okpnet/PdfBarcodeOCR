@@ -9,5 +9,9 @@ namespace ImageManagement.Adapter
     public interface IParentPdfFileItem
     {
         int ThumbnailSide { get; }
+        /// <summary>
+        /// PDFのページをコレクション
+        /// </summary>
+        IEnumerable<PdfPageAdpter> PdfFileItems { get; }
     }
 }

@@ -1,4 +1,7 @@
-﻿using Microsoft.UI.Xaml;
+﻿using DrageeScales.Helper;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
@@ -6,6 +9,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,6 +30,8 @@ namespace DrageeScales
     /// </summary>
     public partial class App : Application
     {
+        public static IServiceProvider Services { get; private set; }
+        private IHost _host;
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -33,6 +39,26 @@ namespace DrageeScales
         public App()
         {
             this.InitializeComponent();
+            //ログサービス
+            Serilog.Log.Logger = new LoggerConfiguration().
+                    Enrich.FromLogContext().
+#if DEBUG       
+                    WriteTo.Debug().
+                    MinimumLevel.Verbose().
+#else
+                    MinimumLevel.Information().
+                    WriteTo.File("log.txt", rollingInterval: RollingInterval.Day).
+#endif
+                    CreateLogger();
+            //サービスホスト
+            _host = Host.CreateDefaultBuilder()
+                .ConfigureServices((context, services) =>
+                {
+                    services=services.SetService();
+                })
+                .Build();
+
+            Services = _host.Services;
         }
 
         /// <summary>

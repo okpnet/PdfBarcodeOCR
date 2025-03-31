@@ -11,6 +11,8 @@ namespace ImageManagement.Collection
     public class PdfFileItemCollection : ObservableCollection<PdfPageAdpter>, IParentPdfFileItem, IPdfFileItemCollection, IDisposable, IProcessingModel
     {
         private IList<IPdf> _pdfList = new List<IPdf>();
+        
+        public bool IsAny=>this.Any();
         /// <summary>
         /// サムネイルの一辺の最大長さ
         /// </summary>
@@ -32,14 +34,7 @@ namespace ImageManagement.Collection
             try{
                 IsBusy = true;
                 var tmpPath = Path.Combine(TmpDir, Guid.NewGuid().ToString());
-                var item = new PdfItem(filePath, tmpPath);
-                _pdfList.Add(item);
-                await item.InitilizePageAsync();
-                foreach (var page in item.Pages)
-                {
-                    var addItem = new PdfPageAdpter(this, page);
-                    Add(addItem);
-                }
+                await AddItem(filePath, tmpPath);
             }
             finally
             {
@@ -52,9 +47,48 @@ namespace ImageManagement.Collection
             var tasks = new List<Task>();
             foreach (var filePath in filePaths)
             {
-                tasks.Add(AddItemAsync(filePath, progress));
+                var tmpPath = Path.Combine(TmpDir, Guid.NewGuid().ToString());
+                tasks.Add(AddItem(filePath, tmpPath));
             }
-            await Task.WhenAll(tasks);
+            try
+            {
+                IsBusy = true;
+                await Task.WhenAll(tasks);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        public async Task ForeachWhenall(Func<PdfPageAdpter,Task> funcWhenAll)
+        {
+            var tasks= new List<Task>();
+            foreach(var pdfPage in this)
+            {
+                tasks.Add(funcWhenAll(pdfPage));
+            }
+            try
+            {
+                IsBusy = true;
+                await Task.WhenAll(tasks);
+            }
+            finally
+            {
+                IsBusy= false;
+            }
+        }
+
+        private async Task AddItem(string filePath,string tmpPath)
+        {
+            var item = new PdfItem(filePath, tmpPath);
+            _pdfList.Add(item);
+            await item.InitilizePageAsync();
+            foreach (var page in item.Pages)
+            {
+                var addItem = await PdfPageAdpter.CreateAsync(this, page);
+                Add(addItem);
+            }
         }
 
         public void Dispose()
