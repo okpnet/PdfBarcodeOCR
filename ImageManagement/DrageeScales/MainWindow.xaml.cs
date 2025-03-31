@@ -71,7 +71,8 @@ namespace DrageeScales
 
         private void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
-            WindowModel.Service.
+
+            WindowModel.Service.SaveToPdfromAllImagesObserver.OnNext(new )
         }
 
         private void Grid_DragOver(object sender, DragEventArgs e)
