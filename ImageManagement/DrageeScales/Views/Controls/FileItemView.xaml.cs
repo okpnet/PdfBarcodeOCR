@@ -1,4 +1,4 @@
-using ImageManagement.Adapter;
+using DrageeScales.Views.Dtos;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.ComponentModel;
@@ -6,6 +6,8 @@ using System.Drawing;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using Windows.Storage.Pickers;
+using WinRT.Interop;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -48,7 +50,16 @@ namespace DrageeScales.Views.Controls
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            disposables.Clear();
+        }
+
+        private async void HyperlinkButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var filePicker = new FileSavePicker();
+            filePicker.SuggestedFileName = PdfAdapter.FileNameToSave;
+            InitializeWithWindow.Initialize(filePicker, WindowNative.GetWindowHandle(this));
+            var result=await filePicker.PickSaveFileAsync();
+            if(result is null || result.)
         }
     }
 }

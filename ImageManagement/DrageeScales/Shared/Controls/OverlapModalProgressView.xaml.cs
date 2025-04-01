@@ -26,23 +26,27 @@ namespace DrageeScales.Shared.Controls
 {
     public sealed partial class OverlapModalProgressView : UserControl
     {
-        ProgressModalOption _progressModalOption;
-        public ProgressModalOption ModalOption 
+        bool isProgress;
+
+        ModalOptionBase _modalOptionBase;
+        public ModalOptionBase BaseOption 
         {
-            get => _progressModalOption;
+            get => _modalOptionBase;
             set
             {
-                _progressModalOption = value;
-                System.Diagnostics.Debug.WriteLine($"[UI] {nameof(OverlapModalProgressView)}.{nameof(ProgressModalOption)} = {ModalOption.GetHashCode()}");
+                _modalOptionBase = value;
+                isProgress = _modalOptionBase is ProgressModalOption;
+                VisualStateManager.GoToState(this, _modalOptionBase is ProgressModalOption ? "Progress":"Busy", true);
             }
         }
 
-        public string ValueString => $"{ModalOption?.ProgressValue} %";
+        public ProgressModalOption ProgressModalOption => (ProgressModalOption)_modalOptionBase;
+
+        public BusyModalOption BusyModalOption => (BusyModalOption)_modalOptionBase;
 
         public OverlapModalProgressView()
         {
             this.InitializeComponent();
-            ModalOption = new ProgressModalOption(new Progress<uint>());
         }
     }
 }

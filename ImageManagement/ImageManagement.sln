@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageManagement", "ImageManagement\ImageManagement.csproj", "{760BAED6-D74B-4FF3-813F-2C940420B5EA}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BarcodeImageReader", "..\BarcodeImageReader\BarcodeImageReader\BarcodeImageReader.csproj", "{8C1E248F-73CB-4126-B8C2-1DDA2634BD5B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DrageeScales", "DrageeScales\DrageeScales.csproj", "{45355C6A-095D-4251-8C88-DC4975D3F84F}"
@@ -27,22 +25,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{760BAED6-D74B-4FF3-813F-2C940420B5EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{760BAED6-D74B-4FF3-813F-2C940420B5EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{760BAED6-D74B-4FF3-813F-2C940420B5EA}.Debug|ARM64.ActiveCfg = Debug|Any CPU
-		{760BAED6-D74B-4FF3-813F-2C940420B5EA}.Debug|ARM64.Build.0 = Debug|Any CPU
-		{760BAED6-D74B-4FF3-813F-2C940420B5EA}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{760BAED6-D74B-4FF3-813F-2C940420B5EA}.Debug|x64.Build.0 = Debug|Any CPU
-		{760BAED6-D74B-4FF3-813F-2C940420B5EA}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{760BAED6-D74B-4FF3-813F-2C940420B5EA}.Debug|x86.Build.0 = Debug|Any CPU
-		{760BAED6-D74B-4FF3-813F-2C940420B5EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{760BAED6-D74B-4FF3-813F-2C940420B5EA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{760BAED6-D74B-4FF3-813F-2C940420B5EA}.Release|ARM64.ActiveCfg = Release|Any CPU
-		{760BAED6-D74B-4FF3-813F-2C940420B5EA}.Release|ARM64.Build.0 = Release|Any CPU
-		{760BAED6-D74B-4FF3-813F-2C940420B5EA}.Release|x64.ActiveCfg = Release|Any CPU
-		{760BAED6-D74B-4FF3-813F-2C940420B5EA}.Release|x64.Build.0 = Release|Any CPU
-		{760BAED6-D74B-4FF3-813F-2C940420B5EA}.Release|x86.ActiveCfg = Release|Any CPU
-		{760BAED6-D74B-4FF3-813F-2C940420B5EA}.Release|x86.Build.0 = Release|Any CPU
 		{8C1E248F-73CB-4126-B8C2-1DDA2634BD5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8C1E248F-73CB-4126-B8C2-1DDA2634BD5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C1E248F-73CB-4126-B8C2-1DDA2634BD5B}.Debug|ARM64.ActiveCfg = Debug|Any CPU

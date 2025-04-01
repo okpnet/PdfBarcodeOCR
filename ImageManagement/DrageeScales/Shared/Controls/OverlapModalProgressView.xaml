@@ -10,12 +10,31 @@
     mc:Ignorable="d"
     x:DataType="local2:ProgressModalOption">
 
-    <Grid Visibility="{x:Bind ModalOption.IsModalVisible,Mode=OneWay}">
-        <Rectangle Fill="LightGray" Opacity="{x:Bind ModalOption.Opacity,Mode=OneWay}" ></Rectangle>
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <ProgressRing IsIndeterminate="False" Width="124" Height="124" Value="{x:Bind ModalOption.ProgressValue,Mode=OneWay}" ></ProgressRing>
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
-                <TextBlock FontSize="24" Text="{x:Bind ModalOption.ProgressValue,Mode=OneWay}"></TextBlock>
+    <Grid Visibility="{x:Bind BaseOption.IsModalVisible,Mode=OneWay}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="Progress">
+                    <VisualState.Setters>
+                        <Setter Target="ProgressRing.Visibility" Value="true"></Setter>
+                        <Setter Target="ProgressPercent.Visibility" Value="true"></Setter>
+                        <Setter Target="BusyRing.Visibility" Value="false"></Setter>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Busy">
+                    <VisualState.Setters>
+                        <Setter Target="ProgressRing.Visibility" Value="false"></Setter>
+                        <Setter Target="ProgressPercent.Visibility" Value="false"></Setter>
+                        <Setter Target="BusyRing.Visibility" Value="true"></Setter>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <Rectangle Fill="LightGray" Opacity="{x:Bind BaseOption.Opacity,Mode=OneWay}" ></Rectangle>
+        <StackPanel x:Name="StatePanel" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <ProgressRing x:Name="ProgressRing" IsIndeterminate="false" Width="124" Height="124" Value="{x:Bind ProgressModalOption.ProgressValue,Mode=OneWay}"></ProgressRing>
+            <ProgressRing x:Name="BusyRing" IsIndeterminate="{x:Bind BusyModalOption.IsBusy}" Width="124" Height="124"></ProgressRing>
+            <StackPanel x:Name="ProgressPercent" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
+                <TextBlock FontSize="24" Text="{x:Bind ProgressModalOption.ProgressValue,Mode=OneWay}"></TextBlock>
                 <TextBlock FontSize="16" Text=" %"></TextBlock>
             </StackPanel>
         </StackPanel>

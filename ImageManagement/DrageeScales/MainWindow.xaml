@@ -11,17 +11,12 @@
     mc:Ignorable="d">
 
     <Grid Background="Transparent" AllowDrop="True" DragOver="Grid_DragOver" Drop="Grid_Drop">
-        <shared:OverlapModalProgressView ModalOption="{x:Bind ProgressModalOption}"></shared:OverlapModalProgressView>
+        <shared:OverlapModalProgressView BaseOption="{x:Bind ProgressModalOption}"></shared:OverlapModalProgressView>
         <StackPanel Orientation="Vertical" VerticalAlignment="Top" x:Name="MainFrame">
             <StackPanel Orientation="Horizontal" FlowDirection="LeftToRight">
                 <AppBarButton Label="開く" x:Name="OpenFileBtn" Click="OpenFileBtn_Click">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xE838;" />
-                    </AppBarButton.Icon>
-                </AppBarButton>
-                <AppBarButton Label="解析" x:Name="BarcodeAnalysisBtn" Click="BarcodeAnalysisBtn_Click">
-                    <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xED14;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
                 <AppBarButton Label="保存" x:Name="SaveBtn" IsEnabled="{x:Bind WindowModel.IsCollectionAny,Mode=OneWay}" Click="SaveBtn_Click">

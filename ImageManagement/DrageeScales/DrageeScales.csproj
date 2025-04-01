@@ -17,6 +17,9 @@
 	  <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
   </PropertyGroup>
   <ItemGroup>
+    <Content Remove="Assets\noimage.bmp" />
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="Views\Controls\FileItemCollectionView.xaml" />
     <None Remove="Views\Controls\FileItemView.xaml" />
   </ItemGroup>
@@ -54,7 +57,10 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ImageManagement\ImageManagement.csproj" />
+    <ProjectReference Include="..\..\..\CsCommonLibrary\WinImageShredded\ImageShredded\ImageShredded\ImageShredded.csproj" />
+    <ProjectReference Include="..\..\..\CsCommonLibrary\WinPdfConverter\PdfConverer\PdfConverer\PdfConverer.csproj" />
+    <ProjectReference Include="..\..\..\CsCommonLibrary\WinThumbnailHelper\WinThumbnailHelper\WinThumbnailHelper\WinThumbnailHelper.csproj" />
+    <ProjectReference Include="..\..\BarcodeImageReader\BarcodeImageReader\BarcodeImageReader.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Controls\FileItemCollectionView.xaml">

@@ -1,27 +1,14 @@
 using DrageeScales.Shared.Dtos;
 using DrageeScales.Views.Dtos;
-using ImageManagement.Adapter;
-using ImageManagement.Service;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.IO;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using System.Windows.Controls;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
 
@@ -42,37 +29,67 @@ namespace DrageeScales
 
         public ToastItemCollction ToastItems { get; set; }
 
-        public ProgressModalOption ProgressModalOption { get; set; }
+        public ModalOptionBase ModalOptions { get; set; }
 
         public MainWindow(MainWindowModel mainWindowModel)
         {
             this.InitializeComponent();
             WindowModel = mainWindowModel;
             ToastItems = new ();
-            ProgressModalOption = new(new());
+        }
+
+        private async Task<StorageFolder> ShowFolderPicker()
+        {
+            var picker = new FolderPicker();
+            InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(this));
+            var result = await picker.PickSingleFolderAsync();
+            return result;
         }
 
         private async void OpenFileBtn_Click(object sender, RoutedEventArgs e)
         {
-            var picker = new FolderPicker();
+            var picker = new FileOpenPicker();
+            picker.FileTypeFilter.Add(".pdf");
             InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(this));
-            var folder = await picker.PickSingleFolderAsync();
-            if (folder is null)
+            var files = await picker.PickMultipleFilesAsync();
+            if (files is null)
             {
                 return;
             }
-            WindowModel.OnOpenSource(folder.Name);
+            await WindowModel.OnOpenSource(files.Select(t=>t.Path));
         }
 
-        private void BarcodeAnalysisBtn_Click(object sender, RoutedEventArgs e)
+
+        private async void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
+            var hasDir = Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList.ContainsItem(AppDefine.CASH_OUTPUTDIR_KEY);
+            StorageFolder folder;
 
-        }
+            if (!hasDir)
+            {
+                folder = await ShowFolderPicker();
+            }
+            else
+            {
+                folder = await Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList.GetFolderAsync(AppDefine.CASH_OUTPUTDIR_KEY);
+                var dialog = new ContentDialog
+                {
+                    Title = "フォルダ選択の確認",
+                    Content = $"このまま'{folder.Name}'へ保存します",
+                    PrimaryButtonText = "はい",
+                    CloseButtonText = "いいえ",
+                    DefaultButton = ContentDialogButton.Close,
+                    XamlRoot = this.Content.XamlRoot // 必須！
+                };
 
-        private void SaveBtn_Click(object sender, RoutedEventArgs e)
-        {
+                if (await dialog.ShowAsync() != ContentDialogResult.Primary)
+                {
+                    folder =await ShowFolderPicker();
+                }
+            }
 
-            WindowModel.Service.SaveToPdfromAllImagesObserver.OnNext(new )
+            Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList.AddOrReplace(AppDefine.CASH_OUTPUTDIR_KEY, folder);
+            await WindowModel.OnSaveAllFile(folder.Path);
         }
 
         private void Grid_DragOver(object sender, DragEventArgs e)
@@ -92,7 +109,7 @@ namespace DrageeScales
                 return;
             }
             var items = await e.DataView.GetStorageItemsAsync();
-            WindowModel.OnOpenSource(items.Select(t => t.Path).ToArray());
+            await WindowModel.OnOpenSource(items.Select(t => t.Path));
         }
     }
 }

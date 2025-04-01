@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
@@ -17,7 +18,7 @@ namespace DrageeScales.Shared.Dtos
         public double ProgressValue
         {
             get => _progressValue;
-            set
+            protected set
             {
                 if (_progressValue == value)
                 {
@@ -28,29 +29,32 @@ namespace DrageeScales.Shared.Dtos
             }
         }
 
-        private Progress<uint> _progress;
-
-        public IProgress<uint> Progress
+        private Progress<int> _progress;
+        public IProgress<int> Progress
         {
             get => _progress;
             set
             {
-                if (_progressEvent is not null)
+                _progressEvent?.Dispose();
+                _progress = value as Progress<int>;
+                if( _progress is null)
                 {
-                    _progressEvent.Dispose();
+                    return;
                 }
-                _progress = (Progress<uint>)value;
-                _progressEvent = Observable.FromEventPattern<uint>(
-                    _progress, nameof(Progress<uint>.ProgressChanged)).
+                _progressEvent = Observable.FromEventPattern<int>(
+                    _progress, nameof(Progress<int>.ProgressChanged)).
                     Subscribe(t => 
                     {
                         ProgressValue = Convert.ToDouble(t.EventArgs);
                         System.Diagnostics.Debug.WriteLine($"[SCR] {nameof(Progress)} = {t.EventArgs}");
                     });
+                OnPropertyChanged(nameof(Progress));
             }
         }
 
-        public ProgressModalOption(Progress<uint> progress)
+        public bool IsPercentTextVisible { get; set; }
+
+        public ProgressModalOption(Progress<int> progress)
         {
             Progress = progress;
         }

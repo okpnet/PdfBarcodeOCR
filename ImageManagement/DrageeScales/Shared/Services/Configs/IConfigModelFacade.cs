@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DrageeScales.Shared.Services
+namespace DrageeScales.Shared.Services.Configs
 {
-    class Config
+    public interface IConfigModelFacade<T>
     {
+        void Save(T data);
+
+        T Load();
     }
 }

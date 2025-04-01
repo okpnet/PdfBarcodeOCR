@@ -1,28 +1,35 @@
-﻿using ImageManagement.Helper;
+﻿using DrageeScales.Core;
+using DrageeScales.Helper;
+using DrageeScales.Shared.Helper;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using PdfConverer.Helper;
 using PdfConverer.PdfProcessing;
+using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Windows.Storage.Streams;
 
-namespace ImageManagement.Adapter
+namespace DrageeScales.Views.Dtos
 {
-    public class PdfPageAdpter : IDisposable, INotifyPropertyChanged
+    public class PdfPageAdpter : NotifyPropertyChangedBase, IDisposable, INotifyPropertyChanged
     {
-       
-        public event PropertyChangedEventHandler? PropertyChanged=null;
-
         protected readonly IParentPdfFileItem _parent;
-        
+
         IPdfPage? _pdfPage;
         /// <summary>
         /// PDFのアイテム
         /// </summary>
-        public IPdfPage? PdfPages 
+        public IPdfPage? PdfPages
         {
-            get=> _pdfPage;
+            get => _pdfPage;
             protected set
             {
-                if ( Equals(_pdfPage,value))
+                if (Equals(_pdfPage, value))
                 {
                     return;
                 }
@@ -32,12 +39,12 @@ namespace ImageManagement.Adapter
             }
         }
 
-        string _fileNameToSave=string.Empty;
+        string _fileNameToSave = string.Empty;
         /// <summary>
         /// ファイル名
         /// 保存するときに使用
         /// </summary>
-        public string FileNameToSave 
+        public string FileNameToSave
         {
             get => _fileNameToSave;
             set
@@ -53,7 +60,7 @@ namespace ImageManagement.Adapter
                 System.Diagnostics.Debug.WriteLine($"[UI] FileNameToSave = {FileNameToSave}");
             }
         }
-        
+
         bool _isBusy = false;
         public bool IsBusy
         {
@@ -69,9 +76,9 @@ namespace ImageManagement.Adapter
                 System.Diagnostics.Debug.WriteLine($"[UI] IsBusy = {IsBusy}");
             }
         }
-        
-        Image _thumbnail=new Bitmap(0,0);
-        public Image Thumbnail 
+
+        Image _thumbnail = new Bitmap(0, 0);
+        public Image Thumbnail
         {
             get => _thumbnail;
             set
@@ -81,16 +88,18 @@ namespace ImageManagement.Adapter
                     return;
                 }
                 _thumbnail = value;
+                ThumbnailImageSource=_thumbnail.ConvertImage(ImageFormat.Png);
                 OnPropertyChanged(nameof(Thumbnail));
+                OnPropertyChanged(nameof(ThumbnailImageSource));
                 System.Diagnostics.Debug.WriteLine($"[UI] Thumbnail = {Thumbnail}");
             }
         }
 
-        public string? BaseFile 
+        public string BaseFile
         {
             get
             {
-                if(PdfPages is null || PdfPages.Parent is not IPdfFile pdfFile)
+                if (PdfPages is null || PdfPages.Parent is not IPdfFile pdfFile)
                 {
                     return string.Empty;
                 }
@@ -98,7 +107,7 @@ namespace ImageManagement.Adapter
             }
         }
 
-        bool _isBarcodeFail=false;
+        bool _isBarcodeFail = false;
         public bool IsBarcodeReadFail
         {
             get => _isBarcodeFail;
@@ -108,24 +117,35 @@ namespace ImageManagement.Adapter
                 {
                     return;
                 }
-                _isBarcodeFail = value; 
+                _isBarcodeFail = value;
                 OnPropertyChanged(nameof(IsBarcodeReadFail));
                 System.Diagnostics.Debug.WriteLine($"[UI] IsBarcodeReadFail = {IsBarcodeReadFail}");
             }
         }
 
-        public ImageSource
+        public ImageSource ThumbnailImageSource { get; protected set; }
 
-        protected void OnPropertyChanged(string propertyName)
+        int _progressValue = 0;
+        public int ProgressValue
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            get => _progressValue;
+            protected set
+            {
+                if (_progressValue == value)
+                {
+                    return;
+                }
+                _progressValue = value;
+                OnPropertyChanged(nameof(ProgressValue));
+                System.Diagnostics.Debug.WriteLine($"[UI] ProgressValue = {ProgressValue}");
+            }
         }
 
-        protected PdfPageAdpter(IParentPdfFileItem parent, IPdfPage pdfPage,Image thumbnail)
+        protected PdfPageAdpter(IParentPdfFileItem parent, IPdfPage pdfPage, Image thumbnail)
         {
             _parent = parent;
             _pdfPage = pdfPage;
-            var saveFileName= _pdfPage.Parent is not IPdfFile file ? $"{DateTime.Now.ToString("F")}-{Guid.NewGuid()}" : System.IO.Path.GetFileNameWithoutExtension(file.FilePath);
+            var saveFileName = _pdfPage.Parent is not IPdfFile file ? $"{DateTime.Now.ToString("F")}-{Guid.NewGuid()}" : System.IO.Path.GetFileNameWithoutExtension(file.FilePath);
             _fileNameToSave = $"{saveFileName}-{_pdfPage.PageNumber + 1}";
             _thumbnail = thumbnail;
         }
@@ -137,7 +157,7 @@ namespace ImageManagement.Adapter
         /// <returns></returns>
         public static async Task<PdfPageAdpter> CreateAsync(IParentPdfFileItem parent, IPdfPage pdfPage)
         {
-            var imageDec = await WinThumbnailHelper.ImageDecorator.CreateAsync(pdfPage.ImagePath,parent.ThumbnailSide);
+            var imageDec = await WinThumbnailHelper.ImageDecorator.CreateAsync(pdfPage.ImagePath, parent.ThumbnailSide);
             return new PdfPageAdpter(parent, pdfPage, imageDec.Thumbnail);
         }
 
@@ -147,20 +167,27 @@ namespace ImageManagement.Adapter
         /// <returns></returns>
         public async Task ReadBarcodeFromFileAsync()
         {
-            try{
-                IsBusy = true;
-                if(_pdfPage is null)
-                {
-                    return;
-                }
+            try
+            {
                 
-                var image =await _pdfPage.GetImageAsync();
-                if(image is null)
+                IsBusy = true;
+                if (_pdfPage is null)
                 {
                     return;
                 }
 
-                var result=await image.GetBarcodeResult();
+                var image = await _pdfPage.GetImageAsync();
+                if (image is null)
+                {
+                    return;
+                }
+
+                var result = await image.GetBarcodeResult(
+                    new Progress<int>(t=>
+                    {
+                        ProgressValue = t;
+                        IsBusy = false;
+                    }));
                 if (result.IsSucces)
                 {
                     FileNameToSave = result.Value;
@@ -169,6 +196,7 @@ namespace ImageManagement.Adapter
             finally
             {
                 IsBusy = false;
+                ProgressValue = 0;
             }
         }
         /// <summary>
@@ -180,22 +208,23 @@ namespace ImageManagement.Adapter
         {
             try
             {
-                IsBusy=true;
-                if(PdfPages is null || !System.IO.Directory.Exists(outputDir))
+                IsBusy = true;
+                if (PdfPages is null || !System.IO.Directory.Exists(outputDir))
                 {
                     return;
                 }
-                var image =await PdfPages.GetImageAsync();
+                var image = await PdfPages.GetImageAsync();
                 if (image is null)
                 {
                     return;
                 }
-                var files = System.IO.Directory.GetFiles(outputDir,"*.pdf");
+
+                var files = System.IO.Directory.GetFiles(outputDir, "*.pdf");
                 var saveFileName = FileNameHelper.CreateNumberAppendToNewname(
                     files.Select(System.IO.Path.GetFileNameWithoutExtension)!,
                     FileNameToSave);
-                var saveFullpath=System.IO.Path.Combine(outputDir,$"{saveFileName}.pdf");
-                    await image.SaveFitImageToPdfAsync(saveFullpath); 
+                var saveFullpath = System.IO.Path.Combine(outputDir, $"{saveFileName}.pdf");
+                await image.SaveFitImageToPdfAsync(saveFullpath);
             }
             finally
             {
@@ -205,11 +234,11 @@ namespace ImageManagement.Adapter
 
         public void Dispose()
         {
-            if(PdfPages is IDisposable diposable)
+            if (PdfPages is IDisposable diposable)
             {
                 diposable.Dispose();
             }
-            if(_thumbnail is not null)
+            if (_thumbnail is not null)
             {
                 _thumbnail.Dispose();
             }
