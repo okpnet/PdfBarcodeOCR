@@ -11,7 +11,7 @@ namespace DrageeScales.Shared.Dtos
 {
     public abstract class ModalOptionBase : NotifyPropertyChangedBase, INotifyPropertyChanged
     {
-        private float _opacity = 1.0F;
+        private float _opacity = 0.2F;
         public float Opacity
         {
             get => _opacity;

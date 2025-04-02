@@ -10,37 +10,37 @@
     mc:Ignorable="d"
     x:DataType="local2:ProgressModalOption">
 
-    <Grid x:Name="ModalGrid" Visibility="{x:Bind BaseOption.IsModalVisible,Mode=OneWay}">
+    <Grid x:Name="ModalGrid" Visibility="{x:Bind BaseOption.IsModalVisible,Mode=OneWay}" >
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>
                 <VisualState x:Name="Progress">
                     <VisualState.Setters>
-                        <Setter Target="ProgressRing.Visibility" Value="Visibility.Visible"></Setter>
-                        <Setter Target="ProgressPercent.Visibility" Value="Visibility.Visible"></Setter>
-                        <Setter Target="BusyRing.Visibility" Value="Visibility.Collapsed"></Setter>
+                        <Setter Target="ProgressRing.Visibility" Value="Visible"></Setter>
+                        <Setter Target="ProgressPercent.Visibility" Value="Visible"></Setter>
+                        <Setter Target="BusyRing.Visibility" Value="Collapsed"></Setter>
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="Busy">
                     <VisualState.Setters>
-                        <Setter Target="ProgressRing.Visibility" Value="Visibility.Collapsed"></Setter>
-                        <Setter Target="ProgressPercent.Visibility" Value="Visibility.Collapsed"></Setter>
-                        <Setter Target="BusyRing.Visibility" Value="Visibility.Visible"></Setter>
+                        <Setter Target="ProgressRing.Visibility" Value="Collapsed"></Setter>
+                        <Setter Target="ProgressPercent.Visibility" Value="Collapsed"></Setter>
+                        <Setter Target="BusyRing.Visibility" Value="Visible"></Setter>
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="None">
                     <VisualState.Setters>
-                        <Setter Target="ProgressRing.Visibility" Value="Visibility.Collapsed"></Setter>
-                        <Setter Target="ProgressPercent.Visibility" Value="Visibility.Collapsed"></Setter>
-                        <Setter Target="BusyRing.Visibility" Value="Visibility.Collapsed"></Setter>
+                        <Setter Target="ProgressRing.Visibility" Value="Collapsed"></Setter>
+                        <Setter Target="ProgressPercent.Visibility" Value="Collapsed"></Setter>
+                        <Setter Target="BusyRing.Visibility" Value="Collapsed"></Setter>
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
         <Rectangle Fill="LightGray" Opacity="{x:Bind BaseOption.Opacity,Mode=OneWay}" ></Rectangle>
-        <StackPanel x:Name="StatePanel" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <ProgressRing x:Name="ProgressRing" IsIndeterminate="false" Width="124" Height="124" Value="{x:Bind ProgressModalOption.ProgressValue,Mode=OneWay}"></ProgressRing>
-            <ProgressRing x:Name="BusyRing" IsIndeterminate="{x:Bind BusyModalOption.IsBusy}" Width="124" Height="124"></ProgressRing>
-            <StackPanel x:Name="ProgressPercent" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
+        <StackPanel x:Name="StatePanel" Visibility="{x:Bind BaseOption.IsModalVisible,Mode=OneWay}" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <ProgressRing x:Name="ProgressRing" Visibility="Collapsed"  IsIndeterminate="false" Width="124" Height="124" Value="{x:Bind ProgressModalOption.ProgressValue,Mode=OneWay}"></ProgressRing>
+            <ProgressRing x:Name="BusyRing" Visibility="Collapsed"  IsIndeterminate="{x:Bind BusyModalOption.IsBusy}" Width="124" Height="124"></ProgressRing>
+            <StackPanel x:Name="ProgressPercent" Visibility="Collapsed" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
                 <TextBlock FontSize="24" Text="{x:Bind ProgressModalOption.ProgressValue,Mode=OneWay}"></TextBlock>
                 <TextBlock FontSize="16" Text=" %"></TextBlock>
             </StackPanel>

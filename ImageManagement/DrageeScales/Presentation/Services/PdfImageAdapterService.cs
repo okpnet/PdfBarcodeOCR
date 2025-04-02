@@ -24,7 +24,7 @@ namespace DrageeScales.Presentation.Services
 
         readonly ILogger _logger;
 
-        public IPdfFileItemCollection Collection { get; }
+        public PdfFileItemCollection Collection { get; }
 
         public PdfImageAdapterService()
         {

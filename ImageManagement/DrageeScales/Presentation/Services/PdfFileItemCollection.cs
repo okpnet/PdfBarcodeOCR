@@ -19,10 +19,6 @@ namespace DrageeScales.Presentation.Services
 
         public bool IsAny => this.Any();
         /// <summary>
-        /// サムネイルの一辺の最大長さ
-        /// </summary>
-        public int ThumbnailSide { get; set; }
-        /// <summary>
         /// 一時フォルダ
         /// </summary>
         public string TmpDir { get; set; } = Path.GetTempPath();

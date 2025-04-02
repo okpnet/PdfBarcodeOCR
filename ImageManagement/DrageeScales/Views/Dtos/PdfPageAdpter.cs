@@ -2,19 +2,14 @@
 using DrageeScales.Helper;
 using DrageeScales.Shared.Helper;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
 using PdfConverer.Helper;
 using PdfConverer.PdfProcessing;
 using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.Data.Pdf;
-using Windows.Storage.Streams;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace DrageeScales.Views.Dtos
 {
@@ -94,7 +89,7 @@ namespace DrageeScales.Views.Dtos
                     return;
                 }
                 _thumbnail = value;
-                ThumbnailImageSource=_thumbnail.ConvertImage(ImageFormat.Png);
+                ThumbnailImageSource =_thumbnail.ConvertImage(ImageFormat.Png);
                 OnPropertyChanged(nameof(Thumbnail));
                 OnPropertyChanged(nameof(ThumbnailImageSource));
                 System.Diagnostics.Debug.WriteLine($"[UI] Thumbnail = {Thumbnail}");
@@ -163,9 +158,8 @@ namespace DrageeScales.Views.Dtos
 
         public async Task Initialize()
         {
-            var imageDec = await WinThumbnailHelper.ImageDecorator.CreateAsync(_pdfPage.ImagePath, _parent.ThumbnailSide);
+            var imageDec = await WinThumbnailHelper.ImageDecorator.CreateAsync(_pdfPage.ImagePath, AppDefine.THUMBNAIL_SIZE);
             Thumbnail = imageDec.Thumbnail;
-            FileNameToSave = _pdfPage.Parent is not IPdfFile file ? $"{DateTime.Now.ToString("F")}-{Guid.NewGuid()}" : System.IO.Path.GetFileNameWithoutExtension(file.BaseFilePath);
         }
 
         /// <summary>

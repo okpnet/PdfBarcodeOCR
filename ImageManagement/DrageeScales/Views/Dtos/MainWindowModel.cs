@@ -90,11 +90,13 @@ namespace DrageeScales.Views.Dtos
                 });
 
                 ModalOptionBases = new ProgressModalOption(progressTotal);
+                ModalOptionBases.IsEnabled = true;
                 await Service.OnGetPdfItemsAsync(progressFile, unContainsFiles);
                 await Service.OnReadBarcodeFromImage(progressBarcode);
             }
             finally
             {
+                ModalOptionBases.IsEnabled = false;
                 var message = $"{unContainsFiles.Length} ファイル処理しました" + (numOfDuplicateFiles > 0 ? $"。 {numOfDuplicateFiles} ファイルは登録されています。":""); 
                 ToastItems.Add(new ToastItem(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Success, message));
             }

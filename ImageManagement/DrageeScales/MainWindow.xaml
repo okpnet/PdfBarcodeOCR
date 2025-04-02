@@ -11,7 +11,7 @@
     mc:Ignorable="d">
 
     <Grid Background="Transparent" AllowDrop="True" DragOver="Grid_DragOver" Drop="Grid_Drop">
-        <shared:OverlapModalProgressView BaseOption="{x:Bind WindowModel.ModalOptionBases,Mode=OneWay}"></shared:OverlapModalProgressView>
+        
         <StackPanel Orientation="Vertical" VerticalAlignment="Top" x:Name="MainFrame">
             <StackPanel Orientation="Horizontal" FlowDirection="LeftToRight">
                 <AppBarButton Label="開く" x:Name="OpenFileBtn" Click="OpenFileBtn_Click">
@@ -29,6 +29,8 @@
                 <collectionViews:FileItemCollectionView  x:Name="CollecionPanel" PdfPageAdpters="{x:Bind WindowModel.Collection,Mode=OneWay}"></collectionViews:FileItemCollectionView>
             </Grid>
         </StackPanel>
+        <shared:OverlapModalProgressView BaseOption="{x:Bind WindowModel.ModalOptionBases,Mode=OneWay}"></shared:OverlapModalProgressView>
         <shared:Toast Notifications="{x:Bind WindowModel.ToastItems,Mode=OneWay}" x:Name="ToastView"></shared:Toast>
+        
     </Grid>
 </Window>

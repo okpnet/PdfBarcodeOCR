@@ -41,7 +41,9 @@ namespace DrageeScales.Views.Controls
             }
         } 
 
-        public int TumbnailSlideRate { get; set; } = 256;
+        public int ThumbnailWidth=>AppDefine.THUMBNAIL_SIZE;
+
+        public int PanelWitdth=>AppDefine.THUMBNAIL_SIZE*2;
 
         public int BrusThikness { get; set; } = 0;
 

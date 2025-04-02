@@ -20,5 +20,7 @@ namespace DrageeScales
         public const int SHREDDED_HEIGHT = 10;
 
         public const double STRECH_WIDTH = 2.5;
+
+        public const int THUMBNAIL_SIZE = 160;
     }
 }

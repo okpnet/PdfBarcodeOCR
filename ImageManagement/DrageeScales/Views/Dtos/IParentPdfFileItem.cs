@@ -8,7 +8,6 @@ namespace DrageeScales.Views.Dtos
 {
     public interface IParentPdfFileItem
     {
-        int ThumbnailSide { get; }
         /// <summary>
         /// PDFのページをコレクション
         /// </summary>

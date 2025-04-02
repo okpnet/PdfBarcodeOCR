@@ -10,21 +10,21 @@
     mc:Ignorable="d"
     x:DataType="viewDtos:PdfPageAdpter">
 
-    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Width="512" Margin="4,4,4,4">
+    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Width="{x:Bind PanelWitdth,Mode=OneWay}" Margin="4,4,4,4">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="0">
-                <Image Source="{x:Bind PdfAdapter.ThumbnailImageSource,Mode=OneWay}" Height="{x:Bind TumbnailSlideRate,Mode=OneWay}" Width="{x:Bind TumbnailSlideRate,Mode=OneWay}" Stretch="UniformToFill" VerticalAlignment="Center"></Image>
+                <Image Source="{x:Bind PdfAdapter.ThumbnailImageSource,Mode=OneWay}" Height="{x:Bind ThumbnailWidth,Mode=OneWay}" Width="{x:Bind ThumbnailWidth,Mode=OneWay}" Stretch="UniformToFill" VerticalAlignment="Center"></Image>
             </Grid>
             <StackPanel Grid.Column = '1' Margin="8,0,0,8" Orientation="Vertical" VerticalAlignment="Center">
                 <StackPanel Orientation = 'Vertical'>
                     <TextBlock FontSize="12" Text = '保存ファイル名' Style = '{ThemeResource CaptionTextBlockStyle}'/>
-                    <TextBox Margin="4,4,4,4" IsEnabled="{x:Bind PdfAdapter.IsEnabeled,Mode=OneWay}" Text = '{x:Bind PdfAdapter.FileNameToSave,Mode=TwoWay}' Style = '{ThemeResource CaptionTextBlockStyle}'/>
+                    <TextBox Margin="0,0,0,4" IsEnabled="{x:Bind PdfAdapter.IsEnabeled,Mode=OneWay}" Text = '{x:Bind PdfAdapter.FileNameToSave,Mode=TwoWay}' Style = '{ThemeResource CaptionTextBlockStyle}'/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="4,4,4,4">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0">
                     <HyperlinkButton IsEnabled="{x:Bind PdfAdapter.IsEnabeled,Mode=OneWay}" Click="HyperlinkButton_Click">
                         <StackPanel Orientation="Horizontal">
                             <FontIcon Glyph="&#xE73E;" />

@@ -49,13 +49,10 @@ namespace DrageeScales.Shared.Controls
                     BusyModalOption busy=> "Busy",
                     _=>"None"
                 };
-                DispatcherQueue.TryEnqueue(() =>
-                    {
-                        if (IsLoaded)
-                        {
-                            VisualStateManager.GoToState(this, state, true);
-                        }
-                    });
+                if (IsLoaded)
+                {
+                    VisualStateManager.GoToState(this, state, false);
+                }
 
                 OnPropertyChanged(nameof(BaseOption));
                 if (isProgress)
