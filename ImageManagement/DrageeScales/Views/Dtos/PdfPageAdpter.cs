@@ -89,7 +89,7 @@ namespace DrageeScales.Views.Dtos
                     return;
                 }
                 _thumbnail = value;
-                ThumbnailImageSource =_thumbnail.ConvertImage(ImageFormat.Png);
+                ThumbnailImageSource =_thumbnail.ConvertImage(ImageFormat.Bmp);
                 OnPropertyChanged(nameof(Thumbnail));
                 OnPropertyChanged(nameof(ThumbnailImageSource));
                 System.Diagnostics.Debug.WriteLine($"[UI] Thumbnail = {Thumbnail}");
