@@ -25,7 +25,7 @@ namespace DrageeScales.Presentation.Services
         /// <summary>
         /// 一時フォルダ
         /// </summary>
-        public string TmpDir { get; protected set; } = Path.GetTempPath();
+        public string TmpDir { get; set; } = Path.GetTempPath();
         /// <summary>
         /// PDFのページをコレクション
         /// </summary>
@@ -39,8 +39,7 @@ namespace DrageeScales.Presentation.Services
             try
             {
                 IsBusy = true;
-                var tmpPath = Path.Combine(TmpDir, Guid.NewGuid().ToString());
-                await AddItem(filePath, tmpPath);
+                await AddItem(filePath, TmpDir);
             }
             finally
             {
@@ -53,8 +52,7 @@ namespace DrageeScales.Presentation.Services
             var tasks = new List<Task>();
             foreach (var filePath in filePaths)
             {
-                var tmpPath = Path.Combine(TmpDir, Guid.NewGuid().ToString());
-                tasks.Add(AddItem(filePath, tmpPath));
+                tasks.Add(AddItem(filePath, TmpDir));
             }
             try
             {
@@ -85,15 +83,16 @@ namespace DrageeScales.Presentation.Services
             }
         }
 
-        private async Task AddItem(string filePath, string tmpPath)
+        private async Task AddItem(string filePath, string tmpDirPath)
         {
-            var item = new PdfItem(filePath, tmpPath);
+            var item = new PdfItem(filePath, tmpDirPath);
             _pdfList.Add(item);
             await item.InitilizePageAsync();
             foreach (var page in item.Pages)
             {
-                var addItem = await PdfPageAdpter.CreateAsync(this, page);
+                var addItem = new PdfPageAdpter(this, page);
                 Add(addItem);
+                await addItem.Initialize();
             }
         }
 

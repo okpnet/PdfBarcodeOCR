@@ -27,15 +27,11 @@ namespace DrageeScales
         /// </summary>
         public MainWindowModel WindowModel { get; }
 
-        public ToastItemCollction ToastItems { get; set; }
-
-        public ModalOptionBase ModalOptions { get; set; }
 
         public MainWindow(MainWindowModel mainWindowModel)
         {
             this.InitializeComponent();
             WindowModel = mainWindowModel;
-            ToastItems = new ();
         }
 
         private async Task<StorageFolder> ShowFolderPicker()

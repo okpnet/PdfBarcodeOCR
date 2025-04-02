@@ -14,11 +14,32 @@ using WinRT.Interop;
 
 namespace DrageeScales.Views.Controls
 {
-    public sealed partial class FileItemView : UserControl,IDisposable
+    public sealed partial class FileItemView : UserControl,IDisposable,INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         CompositeDisposable disposables = new();
 
-        public PdfPageAdpter PdfAdapter { get; set; }
+        PdfPageAdpter _pdfAdapter; 
+        public PdfPageAdpter PdfAdapter 
+        {
+            get => _pdfAdapter;
+            set
+            {
+               
+                if(_pdfAdapter == value)
+                {
+                    return;
+                }
+                _pdfAdapter = value;
+                OnPropertyChanged(nameof(PdfAdapter));
+            }
+        } 
 
         public int TumbnailSlideRate { get; set; } = 256;
 
@@ -29,23 +50,6 @@ namespace DrageeScales.Views.Controls
         public FileItemView()
         {
             this.InitializeComponent();
-            disposables.Add(
-                Observable.FromEventPattern<PropertyChangedEventArgs>(PdfAdapter,nameof(PdfAdapter.PropertyChanged)).
-                Where(t=>t.EventArgs.PropertyName==nameof(PdfPageAdpter.IsBarcodeReadFail)).
-                Subscribe(t =>
-                {
-                    if (PdfAdapter.IsBarcodeReadFail)
-                    {
-                        BorderColors = Color.FromArgb(255, 129, 129);
-                        BrusThikness = 5;
-                    }
-                    else
-                    {
-                        BorderColors = Color.Transparent;
-                        BrusThikness = 0;
-                    }
-                })
-            );
         }
 
         public void Dispose()
@@ -59,7 +63,27 @@ namespace DrageeScales.Views.Controls
             filePicker.SuggestedFileName = PdfAdapter.FileNameToSave;
             InitializeWithWindow.Initialize(filePicker, WindowNative.GetWindowHandle(this));
             var result=await filePicker.PickSaveFileAsync();
-            if(result is null || result.)
+            if(result is null || result.Path is (null or ""))
+            {
+                return;
+            }
+            if (System.IO.File.Exists(result.Path))
+            {
+                var dialog = new ContentDialog
+                {
+                    Title = "上書きの確認",
+                    Content = $"ファイル'{result.Name}'は存在します。上書きしますか？",
+                    PrimaryButtonText = "はい",
+                    CloseButtonText = "いいえ",
+                    DefaultButton = ContentDialogButton.Close,
+                    XamlRoot = this.Content.XamlRoot // 必須！
+                };
+                if (await dialog.ShowAsync() != ContentDialogResult.Primary)
+                {
+                    return;
+                }
+            }
+            await PdfAdapter.SaveToPdfAsync(result.Path);
         }
     }
 }

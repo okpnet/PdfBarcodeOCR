@@ -12,13 +12,17 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.Data.Pdf;
 using Windows.Storage.Streams;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace DrageeScales.Views.Dtos
 {
     public class PdfPageAdpter : NotifyPropertyChangedBase, IDisposable, INotifyPropertyChanged
     {
         protected readonly IParentPdfFileItem _parent;
+
+        public string Test { get; set; } = "TEST";
 
         IPdfPage? _pdfPage;
         /// <summary>
@@ -73,11 +77,13 @@ namespace DrageeScales.Views.Dtos
                 }
                 _isBusy = value;
                 OnPropertyChanged(nameof(IsBusy));
+                OnPropertyChanged(nameof(IsEnabeled));
+                OnPropertyChanged(nameof(IsBusyBar));
                 System.Diagnostics.Debug.WriteLine($"[UI] IsBusy = {IsBusy}");
             }
         }
 
-        Image _thumbnail = new Bitmap(0, 0);
+        Image _thumbnail = default;
         public Image Thumbnail
         {
             get => _thumbnail;
@@ -103,7 +109,7 @@ namespace DrageeScales.Views.Dtos
                 {
                     return string.Empty;
                 }
-                return System.IO.Path.GetFileNameWithoutExtension(pdfFile.FilePath);
+                return System.IO.Path.GetFileNameWithoutExtension(pdfFile.BaseFilePath);
             }
         }
 
@@ -137,28 +143,29 @@ namespace DrageeScales.Views.Dtos
                 }
                 _progressValue = value;
                 OnPropertyChanged(nameof(ProgressValue));
+                OnPropertyChanged(nameof(IsBusyBar));
                 System.Diagnostics.Debug.WriteLine($"[UI] ProgressValue = {ProgressValue}");
             }
         }
 
-        protected PdfPageAdpter(IParentPdfFileItem parent, IPdfPage pdfPage, Image thumbnail)
+        public bool IsEnabeled => !_isBusy;
+
+        public bool IsBusyBar => IsBusy && ProgressValue == 0;
+
+
+        public PdfPageAdpter(IParentPdfFileItem parent, IPdfPage pdfPage)
         {
             _parent = parent;
             _pdfPage = pdfPage;
-            var saveFileName = _pdfPage.Parent is not IPdfFile file ? $"{DateTime.Now.ToString("F")}-{Guid.NewGuid()}" : System.IO.Path.GetFileNameWithoutExtension(file.FilePath);
+            var saveFileName = _pdfPage.Parent is not IPdfFile file ? $"{DateTime.Now.ToString("F")}-{Guid.NewGuid()}" : System.IO.Path.GetFileNameWithoutExtension(file.BaseFilePath);
             _fileNameToSave = $"{saveFileName}-{_pdfPage.PageNumber + 1}";
-            _thumbnail = thumbnail;
         }
-        /// <summary>
-        /// ファクトリメソッド
-        /// </summary>
-        /// <param name="parent"></param>
-        /// <param name="pdfPage"></param>
-        /// <returns></returns>
-        public static async Task<PdfPageAdpter> CreateAsync(IParentPdfFileItem parent, IPdfPage pdfPage)
+
+        public async Task Initialize()
         {
-            var imageDec = await WinThumbnailHelper.ImageDecorator.CreateAsync(pdfPage.ImagePath, parent.ThumbnailSide);
-            return new PdfPageAdpter(parent, pdfPage, imageDec.Thumbnail);
+            var imageDec = await WinThumbnailHelper.ImageDecorator.CreateAsync(_pdfPage.ImagePath, _parent.ThumbnailSide);
+            Thumbnail = imageDec.Thumbnail;
+            FileNameToSave = _pdfPage.Parent is not IPdfFile file ? $"{DateTime.Now.ToString("F")}-{Guid.NewGuid()}" : System.IO.Path.GetFileNameWithoutExtension(file.BaseFilePath);
         }
 
         /// <summary>
@@ -167,6 +174,7 @@ namespace DrageeScales.Views.Dtos
         /// <returns></returns>
         public async Task ReadBarcodeFromFileAsync()
         {
+            BarcodeParameter result = default;
             try
             {
                 
@@ -182,11 +190,10 @@ namespace DrageeScales.Views.Dtos
                     return;
                 }
 
-                var result = await image.GetBarcodeResult(
+                result = await image.GetBarcodeResult(
                     new Progress<int>(t=>
                     {
                         ProgressValue = t;
-                        IsBusy = false;
                     }));
                 if (result.IsSucces)
                 {
@@ -196,7 +203,16 @@ namespace DrageeScales.Views.Dtos
             finally
             {
                 IsBusy = false;
-                ProgressValue = 0;
+                if (result.IsSucces)
+                {
+                    ProgressValue = 0;
+                    IsBarcodeReadFail = false;
+                }
+                else
+                {
+                    ProgressValue =  100;
+                    IsBarcodeReadFail= true;
+                }
             }
         }
         /// <summary>

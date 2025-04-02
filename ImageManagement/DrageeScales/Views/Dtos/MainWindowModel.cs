@@ -1,6 +1,7 @@
 ﻿using DrageeScales.Presentation.Services;
 using DrageeScales.Shared.Dtos;
 using DrageeScales.Shared.Services.Configs;
+using PdfConverer.PdfProcessing;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace DrageeScales.Views.Dtos
 {
-    public class MainWindowModel: ViewModelBase,IDisposable
+    public class MainWindowModel: ViewModelBase,IDisposable,INotifyPropertyChanged
     {
         CompositeDisposable _disposables = new();
 
@@ -22,13 +23,41 @@ namespace DrageeScales.Views.Dtos
 
         public PdfImageAdapterService Service { get; }
 
-        public ModalOptionBase ModalOptionBases { get; set; }
+        public PdfFileItemCollection Collection => (PdfFileItemCollection)Service.Collection;
 
-        public ToastItemCollction ToastItems { get; set; }
+        ModalOptionBase _modalOptionBases;
+        public ModalOptionBase ModalOptionBases 
+        {
+            get => _modalOptionBases;
+            set
+            {
+                if (Equals(_modalOptionBases, value))
+                {
+                    return;
+                }
+                _modalOptionBases = value;
+                OnPropertyChanged(nameof(ModalOptionBases));
+            }
+        }
+
+        ToastItemCollction _toastItems = new ToastItemCollction();
+        public ToastItemCollction ToastItems 
+        {
+            get => _toastItems;
+            set
+            {
+                if (Equals(_toastItems, value))
+                {
+                    return;
+                }
+                OnPropertyChanged(nameof(ToastItems));
+            }
+        }
 
         public MainWindowModel(IConfigService<AppSetting> configService, PdfImageAdapterService service):base(configService)
         {
             Service = service;
+            ModalOptionBases = new BusyModalOption();
             _disposables.Add(
                 Observable.FromEventPattern<NotifyCollectionChangedEventArgs>(
                 Service.Collection, $"{nameof(ObservableCollection<PdfPageAdpter>.CollectionChanged)}").
@@ -36,8 +65,15 @@ namespace DrageeScales.Views.Dtos
                 );
         }
 
-        public async Task OnOpenSource(IEnumerable<string> souecees)
+        public async Task OnOpenSource(IEnumerable<string> source)
         {
+            var registerFiles = Collection.Select(t => t.PdfPages.Parent).OfType<IPdfFile>().Select(t => t.BaseFilePath);
+            var unContainsFiles = source.Where(t=>!registerFiles.Contains(t)).ToArray();
+            var numOfDuplicateFiles = registerFiles.Join(source, a => a, b => b, (a, b) => a).Count();
+            if (!unContainsFiles.Any())
+            {
+                return;
+            }
             try
             {
                 int fileProgress = 0;
@@ -54,12 +90,13 @@ namespace DrageeScales.Views.Dtos
                 });
 
                 ModalOptionBases = new ProgressModalOption(progressTotal);
-                await Service.OnGetPdfItemsAsync(progressFile, souecees.ToArray());
+                await Service.OnGetPdfItemsAsync(progressFile, unContainsFiles);
                 await Service.OnReadBarcodeFromImage(progressBarcode);
             }
             finally
             {
-
+                var message = $"{unContainsFiles.Length} ファイル処理しました" + (numOfDuplicateFiles > 0 ? $"。 {numOfDuplicateFiles} ファイルは登録されています。":""); 
+                ToastItems.Add(new ToastItem(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Success, message));
             }
         }
 

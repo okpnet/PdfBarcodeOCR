@@ -24,8 +24,15 @@ using System.Reactive.Disposables;
 
 namespace DrageeScales.Shared.Controls
 {
-    public sealed partial class OverlapModalProgressView : UserControl
+    public sealed partial class OverlapModalProgressView : UserControl,INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         bool isProgress;
 
         ModalOptionBase _modalOptionBase;
@@ -36,13 +43,36 @@ namespace DrageeScales.Shared.Controls
             {
                 _modalOptionBase = value;
                 isProgress = _modalOptionBase is ProgressModalOption;
-                VisualStateManager.GoToState(this, _modalOptionBase is ProgressModalOption ? "Progress":"Busy", true);
+                var state = _modalOptionBase switch
+                {
+                    ProgressModalOption progress=> "Progress",
+                    BusyModalOption busy=> "Busy",
+                    _=>"None"
+                };
+                DispatcherQueue.TryEnqueue(() =>
+                    {
+                        if (IsLoaded)
+                        {
+                            VisualStateManager.GoToState(this, state, true);
+                        }
+                    });
+
+                OnPropertyChanged(nameof(BaseOption));
+                if (isProgress)
+                {
+                    OnPropertyChanged(nameof(ProgressModalOption));
+                }
+                else
+                {
+                    OnPropertyChanged(nameof(BusyModalOption));
+                }
+                
             }
         }
 
-        public ProgressModalOption ProgressModalOption => (ProgressModalOption)_modalOptionBase;
+        public ProgressModalOption ProgressModalOption => (_modalOptionBase as ProgressModalOption)??new(new());
 
-        public BusyModalOption BusyModalOption => (BusyModalOption)_modalOptionBase;
+        public BusyModalOption BusyModalOption => (_modalOptionBase as BusyModalOption)??new();
 
         public OverlapModalProgressView()
         {

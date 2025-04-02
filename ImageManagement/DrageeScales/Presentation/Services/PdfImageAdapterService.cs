@@ -1,4 +1,5 @@
-﻿using DrageeScales.Presentation.Dtos;
+﻿using DrageeScales.Helper;
+using DrageeScales.Presentation.Dtos;
 using DrageeScales.Views.Dtos;
 using Microsoft.Extensions.Logging;
 using PdfConverer.PdfProcessing;
@@ -10,6 +11,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,26 +26,21 @@ namespace DrageeScales.Presentation.Services
 
         public IPdfFileItemCollection Collection { get; }
 
-        public IObserver<FileOpenArg> FileOrDirOpenObserver { get; }
-
-        public IObserver<SaveToPdfromAllImagesArg> SaveToPdfromAllImagesObserver { get; }
-
-        public IObserver<SaveToPdfromImagesArg> SaveToPdfromImagesObserver { get; }
-
-        public IObserver<RemovePdfPageAdapterArg> RemovePdfPageAdapterObserver { get; }
-
         public PdfImageAdapterService()
         {
-            Collection = new PdfFileItemCollection();
-            FileOrDirOpenObserver = _subject.AsObserver<FileOpenArg>();
-            SaveToPdfromAllImagesObserver = _subject.AsObserver<SaveToPdfromAllImagesArg>();
-            SaveToPdfromImagesObserver = _subject.AsObserver<SaveToPdfromImagesArg>();
-            RemovePdfPageAdapterObserver = _subject.AsObserver<RemovePdfPageAdapterArg>();
-
-            _disposables.Add(_subject.OfType<FileOpenArg>().Subscribe(async t => await OnGetPdfItemsAsync(t.FileOrDirPaths)));
-            _disposables.Add(_subject.OfType<SaveToPdfromAllImagesArg>().Subscribe(async t => await OnSaveToPdfAllImages(t.OutDir)));
-            _disposables.Add(_subject.OfType<SaveToPdfromImagesArg>().Subscribe(async t => await OnSaveToPdfImages(t.PdfPageAdpter, t.OutDir)));
-            _disposables.Add(_subject.OfType<RemovePdfPageAdapterArg>().Subscribe(async t => await OnRemovePdfPageAdapter(t.PdfPageAdpter)));
+            var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),AppDefine.CASH_DIR_NAME);
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            else
+            {
+                new DirectoryInfo(path).DeleteFilesAndDirExceptRootDirectory();
+            }
+            Collection = new PdfFileItemCollection() 
+            { 
+                TmpDir=path,
+            };
         }
         /// <summary>
         /// コンストラクタ
@@ -130,7 +127,7 @@ namespace DrageeScales.Presentation.Services
                 var done = Interlocked.Increment(ref numOfComplete);
                 var percent = numOfComplete == 0 ? 0 : done * 100 / numOfTasks;
                 progress.Report(percent);
-                _logger?.LogInformation($"READ BARCODE FILE:{System.IO.Path.GetFileNameWithoutExtension(((IPdfFile)t.PdfPages.Parent).FilePath)} PAGE:{(t.PdfPages.PageNumber + 1)}");
+                _logger?.LogInformation($"READ BARCODE FILE:{System.IO.Path.GetFileNameWithoutExtension(((IPdfFile)t.PdfPages.Parent).BaseFilePath)} PAGE:{(t.PdfPages.PageNumber + 1)}");
             });
             await Task.WhenAll(tasks);
             await Task.Delay(1000);

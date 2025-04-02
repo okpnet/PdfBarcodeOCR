@@ -4,6 +4,7 @@ using DrageeScales.Views.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -52,12 +53,12 @@ namespace DrageeScales.Helper
                 result = await Task.Run(() =>
                 {
                     //3回目。千切りを引き延ばして空白スペースを確保する
-                    var strechImages = images.Select(t =>
+                    var strechImages = images.Select((t,i) =>
                     {
                         var strechImage = new Bitmap(strechWidth, AppDefine.SHREDDED_HEIGHT);
                         using var grph = Graphics.FromImage(strechImage);
                         grph.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                        grph.DrawImage(strechImage, new Rectangle(0, 0, strechWidth, AppDefine.SHREDDED_HEIGHT));
+                        grph.DrawImage(t, new Rectangle(0, 0, strechWidth, AppDefine.SHREDDED_HEIGHT));//ここのTをstrechImageにするとエラーにできる
                         return strechImage;
                     }).ToArray();
                     var strechResult = strechImages.OfType<Bitmap>().GetBarcodeValueShreddedHorizontal(AppDefine.SHREDDED_HEIGHT);
@@ -110,10 +111,11 @@ namespace DrageeScales.Helper
                 var result = BarcodeReader.ReadFromBitmap(shreddeddImage);
                 resultList.Add(result);
             }
-            if (resultList.Count == 0)
+            if (!resultList.Where(t => t.IsSuccessRead).Any())
             {
-                return null;
+                return BarcodeParameter.FromUnableRed();
             }
+            
             var key = resultList.Where(t => t.IsSuccessRead).
                 Select(t => t.TryGetResultValue(out var buffer) ? buffer.Value : "").
                 GroupBy(t => t).

@@ -10,21 +10,28 @@
     mc:Ignorable="d"
     x:DataType="local2:ProgressModalOption">
 
-    <Grid Visibility="{x:Bind BaseOption.IsModalVisible,Mode=OneWay}">
+    <Grid x:Name="ModalGrid" Visibility="{x:Bind BaseOption.IsModalVisible,Mode=OneWay}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup>
                 <VisualState x:Name="Progress">
                     <VisualState.Setters>
-                        <Setter Target="ProgressRing.Visibility" Value="true"></Setter>
-                        <Setter Target="ProgressPercent.Visibility" Value="true"></Setter>
-                        <Setter Target="BusyRing.Visibility" Value="false"></Setter>
+                        <Setter Target="ProgressRing.Visibility" Value="Visibility.Visible"></Setter>
+                        <Setter Target="ProgressPercent.Visibility" Value="Visibility.Visible"></Setter>
+                        <Setter Target="BusyRing.Visibility" Value="Visibility.Collapsed"></Setter>
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="Busy">
                     <VisualState.Setters>
-                        <Setter Target="ProgressRing.Visibility" Value="false"></Setter>
-                        <Setter Target="ProgressPercent.Visibility" Value="false"></Setter>
-                        <Setter Target="BusyRing.Visibility" Value="true"></Setter>
+                        <Setter Target="ProgressRing.Visibility" Value="Visibility.Collapsed"></Setter>
+                        <Setter Target="ProgressPercent.Visibility" Value="Visibility.Collapsed"></Setter>
+                        <Setter Target="BusyRing.Visibility" Value="Visibility.Visible"></Setter>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="None">
+                    <VisualState.Setters>
+                        <Setter Target="ProgressRing.Visibility" Value="Visibility.Collapsed"></Setter>
+                        <Setter Target="ProgressPercent.Visibility" Value="Visibility.Collapsed"></Setter>
+                        <Setter Target="BusyRing.Visibility" Value="Visibility.Collapsed"></Setter>
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
