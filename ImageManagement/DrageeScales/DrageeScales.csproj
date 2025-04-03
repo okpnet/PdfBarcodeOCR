@@ -65,6 +65,11 @@
     <ProjectReference Include="..\..\BarcodeImageReader\BarcodeImageReader\BarcodeImageReader.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="pdfium.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="Views\Controls\FileItemCollectionView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
