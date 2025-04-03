@@ -1,10 +1,8 @@
 ﻿using BarcodeImageReader;
-using DrageeScales.Helper;
 using DrageeScales.Views.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,18 +25,30 @@ namespace DrageeScales.Helper
                 var result = BarcodeReader.ReadFromBitmap(bitmap);
                 if (result.TryGetResultValue(out var barcode))
                 {
-                    return BarcodeParameter.FromSuccess(barcode.Value, barcode.Rect);
+                    //バーコード切り抜きサイズ
+                    var overrapW = (int)((barcode.Rect.Width * 1.2 - barcode.Rect.Width) / 2);
+                    var rect = new Rectangle(
+                        barcode.Rect.X-overrapW,
+                        barcode.Rect.Width + (overrapW *2),//Xのオーバーラップの分
+                        barcode.Rect.Y - AppDefine.BARCODE_IMAGE_OVERLAP,
+                        barcode.Rect.Height + (AppDefine.BARCODE_IMAGE_OVERLAP * 2)//Yのオーバーラップの分
+                        );
+                    return BarcodeParameter.FromSuccess(barcode.Value,rect);
                 }
                 return BarcodeParameter.FromUnableRed();
             });
+
+
 
             if (result.IsSucces)
             {
                 return result;
             }
+
             progress.Report(50);
             Image[] images = [];
             var strechWidth = (int)(bitmap.Width * AppDefine.STRECH_WIDTH);
+
             try
             {
                 images = ImageShredded.BmpShredded.GetHorizotalShredded(bitmap, AppDefine.SHREDDED_HEIGHT).ToArray();
@@ -47,7 +57,15 @@ namespace DrageeScales.Helper
 
                 if (result.IsSucces)
                 {
-                    return result;
+                    //バーコード切り抜きサイズ
+                    var overrapW = (int)((result.Rectangles.Width * 1.2 - result.Rectangles.Width) / 2);
+                    var rect = new Rectangle(
+                        result.Rectangles.X - overrapW,
+                        result.Rectangles.Width + (overrapW * 2),//Xのオーバーラップの分
+                        result.Rectangles.Y - AppDefine.BARCODE_IMAGE_OVERLAP,
+                        result.Rectangles.Height + (AppDefine.BARCODE_IMAGE_OVERLAP * 2)//Yのオーバーラップの分
+                        );
+                    return BarcodeParameter.FromSuccess(result.Value, rect, true);
                 }
                 progress.Report(75);
                 result = await Task.Run(() =>
@@ -66,15 +84,15 @@ namespace DrageeScales.Helper
                     {
                         strechImage.Dispose();
                     }
-
                     if (strechResult.IsSucces)
                     {
-                        var prevRect = new Rectangle(
-                                (int)(strechResult.Rectangles.X / AppDefine.STRECH_WIDTH),
-                                strechResult.Rectangles.Y,
-                                (int)(strechResult.Rectangles.Width / AppDefine.STRECH_WIDTH),
-                                strechResult.Rectangles.Height
-                            );
+                        //バーコード切り抜きサイズ
+                        var overrapW =(int)((strechResult.Rectangles.Width * 1.2 - strechResult.Rectangles.Width)/2);
+                        var x = (int)(strechResult.Rectangles.X / AppDefine.STRECH_WIDTH) - overrapW ;
+                        var w=(int)(strechResult.Rectangles.Width / AppDefine.STRECH_WIDTH) + (overrapW * 2);//Xのオーバーラップの分
+                        var y = strechResult.Rectangles.Y - AppDefine.BARCODE_IMAGE_OVERLAP;
+                        var h= strechResult.Rectangles.Height + (AppDefine.BARCODE_IMAGE_OVERLAP * 2 );//Yのオーバーラップの分
+                        var prevRect = new Rectangle(x,y,w,h);
                         return BarcodeParameter.FromSuccess(strechResult.Value, prevRect, true);
                     }
                     return strechResult;
@@ -137,15 +155,15 @@ namespace DrageeScales.Helper
         /// <returns></returns>
         internal static Rectangle GetHorizontalShreddedRect(IEnumerable<IBarcodeItem> items, string valueKey, int shreddedHeight)
         {
-            var records = items.Where(t => t.IsSuccessRead).Select((t, index) =>
+            var records = items.Select((t,i)=>new { val=t, index=i }).Where(t => t.val.IsSuccessRead).Select(t =>
             {
-                t.TryGetResultValue(out var resultValue);
-                return new { index, item = resultValue };
+                t.val.TryGetResultValue(out var resultValue);
+                return new { t.index, item = resultValue };
             });
             var posX = records.Where(t => t is not null && t.item.Value == valueKey).Min(t => t.item.Rect.X);
-            var posY = records.Where(t => t.item is not null).Min(t => t.index) * shreddedHeight;
+            var posY = records.Where(t => t.item is not null).Min(t => t.index) * shreddedHeight - shreddedHeight;
             var width = records.Where(t => t is not null && t.item.Value == valueKey).Select(t => t.item.Rect.Width + t.item.Rect.X).Max() - posX;
-            var height = records.Where(t => t is not null && t.item is not null).Max(t => t.index) * shreddedHeight - posY;
+            var height = records.Where(t => t is not null && t.item is not null).Max(t => t.index) * shreddedHeight +(shreddedHeight * 2) - posY;
             return new Rectangle(posX, posY, width, height);
         }
         /// <summary>

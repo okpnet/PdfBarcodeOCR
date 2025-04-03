@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
 namespace DrageeScales.Views.Dtos
@@ -18,8 +19,25 @@ namespace DrageeScales.Views.Dtos
     public class MainWindowModel: ViewModelBase,IDisposable,INotifyPropertyChanged
     {
         CompositeDisposable _disposables = new();
+        Subject<object> _subject = new();
 
-        public bool IsCollectionAny { get; set; }
+        bool _isCollectionAny = false;
+        public bool IsCollectionAny 
+        {
+            get => _isCollectionAny;
+            private set
+            {
+                if (_isCollectionAny == value)
+                {
+                    return;
+                }
+                _isCollectionAny = value;
+                _subject.OnNext(value);
+                OnPropertyChanged(nameof(IsCollectionAny));
+            }
+        }
+
+        public IObservable<bool> CollectionAnyEvent { get; }
 
         public PdfImageAdapterService Service { get; }
 
@@ -58,10 +76,14 @@ namespace DrageeScales.Views.Dtos
         {
             Service = service;
             ModalOptionBases = new BusyModalOption();
+            CollectionAnyEvent=_subject.AsObservable<object>().OfType<bool>();
             _disposables.Add(
                 Observable.FromEventPattern<NotifyCollectionChangedEventArgs>(
                 Service.Collection, $"{nameof(ObservableCollection<PdfPageAdpter>.CollectionChanged)}").
-                Subscribe(t => IsCollectionAny = Service.Collection.IsAny)
+                Subscribe(t => 
+                {
+                    IsCollectionAny = Service.Collection.IsAny;
+                })
                 );
         }
 
@@ -104,7 +126,19 @@ namespace DrageeScales.Views.Dtos
 
         public async Task OnSaveAllFile(string path) 
         {
-            await Service.OnSaveToPdfAllImages(path);
+            try
+            {
+                var progressTotal = new Progress<int>();
+                ModalOptionBases = new ProgressModalOption(progressTotal);
+                ModalOptionBases.IsEnabled = true;
+                await Service.OnSaveToPdfAllImages(progressTotal, path);
+            }
+            finally
+            {
+                ModalOptionBases.IsEnabled = false;
+                var message = $"できるかぎりファイルを保存しました";
+                ToastItems.Add(new ToastItem(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Success, message));
+            }
         }
 
         public void Dispose()

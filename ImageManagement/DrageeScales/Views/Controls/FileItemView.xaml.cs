@@ -1,10 +1,7 @@
+using DrageeScales.Shared.Helper;
 using DrageeScales.Views.Dtos;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using System.ComponentModel;
-using System.Drawing;
-using System.Linq;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
@@ -14,78 +11,53 @@ using WinRT.Interop;
 
 namespace DrageeScales.Views.Controls
 {
-    public sealed partial class FileItemView : UserControl,IDisposable,INotifyPropertyChanged
+    public sealed partial class FileItemView : UserControl
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        FileViewModel FileViewModels { get; set; }
 
-        private void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        CompositeDisposable disposables = new();
-
-        PdfPageAdpter _pdfAdapter; 
-        public PdfPageAdpter PdfAdapter 
-        {
-            get => _pdfAdapter;
-            set
-            {
-               
-                if(_pdfAdapter == value)
-                {
-                    return;
-                }
-                _pdfAdapter = value;
-                OnPropertyChanged(nameof(PdfAdapter));
-            }
-        } 
-
-        public int ThumbnailWidth=>AppDefine.THUMBNAIL_SIZE;
-
-        public int PanelWitdth=>AppDefine.THUMBNAIL_SIZE*2;
-
-        public int BrusThikness { get; set; } = 0;
-
-        public System.Drawing.Color BorderColors { get; set; } = Color.Transparent;
+        public PdfPageAdpter PdfAdapter { get=>FileViewModels.PdfAdapter; set=>FileViewModels.PdfAdapter=value; }
 
         public FileItemView()
         {
             this.InitializeComponent();
-        }
-
-        public void Dispose()
-        {
-            disposables.Clear();
+            FileViewModels = new();
         }
 
         private async void HyperlinkButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var filePicker = new FileSavePicker();
-            filePicker.SuggestedFileName = PdfAdapter.FileNameToSave;
-            InitializeWithWindow.Initialize(filePicker, WindowNative.GetWindowHandle(this));
-            var result=await filePicker.PickSaveFileAsync();
+            var folderPicker = new FolderPicker();
+            var window = (App.Current as App)?.MainWindow;
+            if (window is null)
+            {
+                return;
+            }
+            var hwnd = WindowNative.GetWindowHandle(window);
+            InitializeWithWindow.Initialize(folderPicker, hwnd);
+            var result=await folderPicker.PickSingleFolderAsync();
             if(result is null || result.Path is (null or ""))
             {
                 return;
             }
-            if (System.IO.File.Exists(result.Path))
+            if (FileViewModels.HasFileExists(result.Path) && 
+                await Content.XamlRoot.FileOverWriteConfirmAsync(PdfAdapter.FileNameToSave) == DialogHelperResultYesNo.No)
             {
-                var dialog = new ContentDialog
-                {
-                    Title = "上書きの確認",
-                    Content = $"ファイル'{result.Name}'は存在します。上書きしますか？",
-                    PrimaryButtonText = "はい",
-                    CloseButtonText = "いいえ",
-                    DefaultButton = ContentDialogButton.Close,
-                    XamlRoot = this.Content.XamlRoot // 必須！
-                };
-                if (await dialog.ShowAsync() != ContentDialogResult.Primary)
-                {
-                    return;
-                }
+                return;
             }
-            await PdfAdapter.SaveToPdfAsync(result.Path);
+            await FileViewModels.SaveFileAsync(result.Path);
+        }
+
+        private async void Button_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            if(await XamlRoot.RemoveConfirmAsync(FileViewModels.PdfAdapter.FileNameToSave) == DialogHelperResultYesNo.No)
+            {
+                return;
+            }
+            FileViewModels.RemoveItem();
+        }
+
+        private void Button_Click_1(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            FileViewModels.OpenPdfFile();
         }
     }
 }

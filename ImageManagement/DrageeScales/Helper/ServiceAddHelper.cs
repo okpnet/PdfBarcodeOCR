@@ -18,6 +18,7 @@ namespace DrageeScales.Helper
             services.AddTransient<MainWindow>();
             services.AddSingleton<PdfImageAdapterService>();
             services.AddTransient<MainWindowModel>();//VM
+            services.AddSingleton<AppService>();
             services.AddConfigService(()=>new LocalFilleConfigModelFacade());
             return services;
         }

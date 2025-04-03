@@ -3,10 +3,14 @@ using System.Drawing;
 
 namespace DrageeScales.Views.Dtos
 {
+    /// <summary>
+    /// バーコードの読み取り結果
+    /// </summary>
     public class BarcodeParameter
     {
+        //読み取り中の例外
         readonly Exception? _lastException = null;
-
+        
         public bool IsSucces { get; }
 
         public bool HasException => _lastException is not null;

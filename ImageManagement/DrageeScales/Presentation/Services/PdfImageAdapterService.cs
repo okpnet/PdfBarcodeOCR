@@ -77,17 +77,30 @@ namespace DrageeScales.Presentation.Services
         /// </summary>
         /// <param name="outDir"></param>
         /// <returns></returns>
-        public async Task OnSaveToPdfAllImages(string outDir)
+        public async Task OnSaveToPdfAllImages(IProgress<int> progress, string outDir)
         {
             if (!System.IO.Directory.Exists(outDir))
             {
                 return;
             }
-            await Collection.ForeachWhenall(t =>
+
+            var saveItems = Collection.Where(t => !t.IsBusy && t.ProgressValue == 0);
+            var numOfSaveItems= saveItems.Count();
+            var numOfComplete = 0;
+
+            var tasks=Collection.Where(t => !t.IsBusy && t.ProgressValue == 0).Select(async t =>
             {
+                var done = Interlocked.Increment(ref numOfComplete);
+                var percent = numOfComplete == 0 ? 0 : done * 100 / numOfSaveItems;
+                progress.Report(percent);
                 _logger?.LogInformation($"TOPDF FROM {t.FileNameToSave} FILE.");
-                return t.SaveToPdfAsync(outDir);
+                await t.SaveToPdfAsync(outDir);
+                t.Dispose();
             });
+
+            await Task.WhenAll(tasks);
+            await Task.Delay(500);
+            _logger?.LogInformation($"COMPLETE SAVE {numOfSaveItems} FILES.");
         }
         /// <summary>
         /// 読み込み
@@ -113,7 +126,7 @@ namespace DrageeScales.Presentation.Services
             });
 
             await Task.WhenAll(tasks);
-            await Task.Delay(1000);
+            await Task.Delay(500);
             _logger?.LogInformation($"COMPLETE ADD {numOfTasks} FILES.");
         }
 
@@ -121,7 +134,7 @@ namespace DrageeScales.Presentation.Services
         {
             var numOfTasks = Collection.PdfFileItems.Count();
             var numOfComplete = 0;
-            var tasks=Collection.PdfFileItems.Select(async t =>
+            var tasks=Collection.PdfFileItems.Where(t=>!t.IsInit).Select(async t =>
             {
                 await t.ReadBarcodeFromFileAsync();
                 var done = Interlocked.Increment(ref numOfComplete);

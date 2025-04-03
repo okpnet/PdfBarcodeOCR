@@ -9,12 +9,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
     <GridView x:Name="ContentGridView" ItemsSource="{x:Bind PdfPageAdpters,Mode=OneWay}"
-        IsItemClickEnabled="False"
-        CanDragItems="False"
-        AllowDrop="False"
-        CanReorderItems="False"
-        SelectionMode="Single"
-        FlowDirection="LeftToRight">
+            ScrollViewer.VerticalScrollMode="Auto"
+            ScrollViewer.VerticalScrollBarVisibility="Auto"
+            IsItemClickEnabled="False"
+            CanDragItems="False"
+            AllowDrop="False"
+            CanReorderItems="False"
+            SelectionMode="Single"
+            FlowDirection="LeftToRight">
         <GridView.ItemTemplate>
             <DataTemplate x:DataType="Adapters:PdfPageAdpter">
                 <local:FileItemView PdfAdapter="{x:Bind}"></local:FileItemView>

@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
@@ -20,18 +21,25 @@ namespace DrageeScales
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainWindow : Window
+    public sealed partial class MainWindow : Window,IDisposable
     {
+        CompositeDisposable _disposables = new();
         /// <summary>
         /// インジェクション
         /// </summary>
         public MainWindowModel WindowModel { get; }
 
-
         public MainWindow(MainWindowModel mainWindowModel)
         {
             this.InitializeComponent();
             WindowModel = mainWindowModel;
+            _disposables.Add( WindowModel.CollectionAnyEvent.Subscribe(t => StateChange(t)));
+        }
+
+        private void StateChange(bool isCollectionAny)
+        {
+            var state = isCollectionAny ? "Collections" : "Infomation";
+            VisualStateManager.GoToState(RootPage, state, false);
         }
 
         private async Task<StorageFolder> ShowFolderPicker()
@@ -58,33 +66,11 @@ namespace DrageeScales
 
         private async void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
-            var hasDir = Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList.ContainsItem(AppDefine.CASH_OUTPUTDIR_KEY);
-            StorageFolder folder;
-
-            if (!hasDir)
+            var folder = await ShowFolderPicker();
+            if(folder is null || folder.Path is (null or ""))
             {
-                folder = await ShowFolderPicker();
+                return;
             }
-            else
-            {
-                folder = await Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList.GetFolderAsync(AppDefine.CASH_OUTPUTDIR_KEY);
-                var dialog = new ContentDialog
-                {
-                    Title = "フォルダ選択の確認",
-                    Content = $"このまま'{folder.Name}'へ保存します",
-                    PrimaryButtonText = "はい",
-                    CloseButtonText = "いいえ",
-                    DefaultButton = ContentDialogButton.Close,
-                    XamlRoot = this.Content.XamlRoot // 必須！
-                };
-
-                if (await dialog.ShowAsync() != ContentDialogResult.Primary)
-                {
-                    folder =await ShowFolderPicker();
-                }
-            }
-
-            Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList.AddOrReplace(AppDefine.CASH_OUTPUTDIR_KEY, folder);
             await WindowModel.OnSaveAllFile(folder.Path);
         }
 
@@ -106,6 +92,11 @@ namespace DrageeScales
             }
             var items = await e.DataView.GetStorageItemsAsync();
             await WindowModel.OnOpenSource(items.Select(t => t.Path));
+        }
+
+        public void Dispose()
+        {
+            _disposables.Clear();
         }
     }
 }

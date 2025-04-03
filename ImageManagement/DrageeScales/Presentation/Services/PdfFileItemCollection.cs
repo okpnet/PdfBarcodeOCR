@@ -81,12 +81,16 @@ namespace DrageeScales.Presentation.Services
 
         private async Task AddItem(string filePath, string tmpDirPath)
         {
+            if(System.IO.Path.GetExtension(filePath)?.ToLower() != ".pdf")
+            {
+                return;
+            }
             var item = new PdfItem(filePath, tmpDirPath);
             _pdfList.Add(item);
             await item.InitilizePageAsync();
             foreach (var page in item.Pages)
             {
-                var addItem = new PdfPageAdpter(this, page);
+                var addItem = new PdfPageAdpter(this, page,(t)=>this.Remove(t));
                 Add(addItem);
                 await addItem.Initialize();
             }

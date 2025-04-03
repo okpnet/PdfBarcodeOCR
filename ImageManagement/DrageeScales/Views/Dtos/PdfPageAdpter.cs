@@ -10,12 +10,16 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
+using Windows.Storage;
 
 namespace DrageeScales.Views.Dtos
 {
     public class PdfPageAdpter : NotifyPropertyChangedBase, IDisposable, INotifyPropertyChanged
     {
         protected readonly IParentPdfFileItem _parent;
+
+        protected readonly Action<PdfPageAdpter> _removeAction;
 
         public string Test { get; set; } = "TEST";
 
@@ -146,14 +150,20 @@ namespace DrageeScales.Views.Dtos
         public bool IsEnabeled => !_isBusy;
 
         public bool IsBusyBar => IsBusy && ProgressValue == 0;
+        /// <summary>
+        /// 初期化済み
+        /// </summary>
+        public bool IsInit { get; protected set; }
 
 
-        public PdfPageAdpter(IParentPdfFileItem parent, IPdfPage pdfPage)
+        public PdfPageAdpter(IParentPdfFileItem parent, IPdfPage pdfPage,Action<PdfPageAdpter> removeAction)
         {
+            IsInit = false;
             _parent = parent;
             _pdfPage = pdfPage;
             var saveFileName = _pdfPage.Parent is not IPdfFile file ? $"{DateTime.Now.ToString("F")}-{Guid.NewGuid()}" : System.IO.Path.GetFileNameWithoutExtension(file.BaseFilePath);
             _fileNameToSave = $"{saveFileName}-{_pdfPage.PageNumber + 1}";
+            _removeAction = removeAction;
         }
 
         public async Task Initialize()
@@ -192,10 +202,13 @@ namespace DrageeScales.Views.Dtos
                 if (result.IsSucces)
                 {
                     FileNameToSave = result.Value;
+                    var imageDec = await WinThumbnailHelper.ImageDecorator.CreateAsync(_pdfPage.ImagePath,result.Rectangles, AppDefine.THUMBNAIL_SIZE);
+                    Thumbnail = imageDec.Thumbnail;
                 }
             }
             finally
             {
+                IsInit = true;
                 IsBusy = false;
                 if (result.IsSucces)
                 {
@@ -223,34 +236,35 @@ namespace DrageeScales.Views.Dtos
                 {
                     return;
                 }
-                var image = await PdfPages.GetImageAsync();
-                if (image is null)
-                {
-                    return;
-                }
 
                 var files = System.IO.Directory.GetFiles(outputDir, "*.pdf");
                 var saveFileName = FileNameHelper.CreateNumberAppendToNewname(
                     files.Select(System.IO.Path.GetFileNameWithoutExtension)!,
                     FileNameToSave);
                 var saveFullpath = System.IO.Path.Combine(outputDir, $"{saveFileName}.pdf");
-                await image.SaveFitImageToPdfAsync(saveFullpath);
+                await PdfPages.SavePdfAsync(saveFullpath);
             }
             finally
             {
                 IsBusy = false;
+
             }
         }
 
         public void Dispose()
         {
-            if (PdfPages is IDisposable diposable)
-            {
-                diposable.Dispose();
-            }
+            _removeAction.Invoke(this);
+
             if (_thumbnail is not null)
             {
                 _thumbnail.Dispose();
+            }
+            ThumbnailImageSource = null;
+            //GC.Collect();
+            //GC.WaitForPendingFinalizers();
+            if (PdfPages is IDisposable diposable)
+            {
+                diposable.Dispose();
             }
         }
     }

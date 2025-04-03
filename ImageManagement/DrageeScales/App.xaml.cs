@@ -1,4 +1,5 @@
 ﻿using DrageeScales.Helper;
+using DrageeScales.Presentation.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
@@ -68,9 +69,13 @@ namespace DrageeScales
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             m_window = _host.Services.GetRequiredService<MainWindow>();
+            var app=_host.Services.GetRequiredService<AppService>();
+            app.Apps = this;
             m_window.Activate();
         }
 
         private Window m_window;
+
+        public Window MainWindow=>m_window;
     }
 }

@@ -20,6 +20,7 @@ namespace DrageeScales.Helper
             stream.Seek(0);
             var result = new BitmapImage();
             result.SetSource(stream);
+            stream.CloneStream();
             return result;
         }
     }

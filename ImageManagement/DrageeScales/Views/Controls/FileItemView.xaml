@@ -10,30 +10,39 @@
     mc:Ignorable="d"
     x:DataType="viewDtos:PdfPageAdpter">
 
-    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Width="{x:Bind PanelWitdth,Mode=OneWay}" Margin="4,4,4,4">
+    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Width="{x:Bind FileViewModels.PanelWitdth,Mode=OneWay}" Margin="4,4,4,4">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <Grid Grid.Column="0">
-                <Image  Source="{x:Bind PdfAdapter.ThumbnailImageSource,Mode=OneWay}" Height="{x:Bind ThumbnailWidth,Mode=OneWay}" Width="{x:Bind ThumbnailWidth,Mode=OneWay}" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center"></Image>
+            <Grid Grid.Column="0" Background="LightGray" Height="{x:Bind FileViewModels.ThumbnailSideLength,Mode=OneWay}" Width="{x:Bind FileViewModels.ThumbnailSideLength,Mode=OneWay}">
+                <Button Click="Button_Click_1">
+                    <Image Source="{x:Bind FileViewModels.PdfAdapter.ThumbnailImageSource,Mode=OneWay}"  Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center"></Image>
+                </Button>
             </Grid>
-            <StackPanel Grid.Column = '1' Margin="8,0,0,8" Orientation="Vertical" VerticalAlignment="Center">
-                <StackPanel Orientation = 'Vertical'>
-                    <TextBlock FontSize="12" Text = '保存ファイル名' Style = '{ThemeResource CaptionTextBlockStyle}'/>
-                    <TextBox Margin="0,0,0,4" IsEnabled="{x:Bind PdfAdapter.IsEnabeled,Mode=OneWay}" Text = '{x:Bind PdfAdapter.FileNameToSave,Mode=TwoWay}' Style = '{ThemeResource CaptionTextBlockStyle}'/>
+            <StackPanel Grid.Column = '1' Margin="8,0,0,8" Orientation="Vertical" VerticalAlignment="Top">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Style="{StaticResource AlternateCloseButtonStyle}" IsEnabled="{x:Bind FileViewModels.PdfAdapter.IsEnabeled,Mode=OneWay}" Click="Button_Click">
+                        <FontIcon Glyph="&#xE74D;"></FontIcon>
+                    </Button>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0">
-                    <HyperlinkButton IsEnabled="{x:Bind PdfAdapter.IsEnabeled,Mode=OneWay}" Click="HyperlinkButton_Click">
-                        <StackPanel Orientation="Horizontal">
-                            <FontIcon Glyph="&#xE73E;" />
-                            <TextBlock Text="保存"></TextBlock>
-                        </StackPanel>
-                    </HyperlinkButton>
+                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                    <StackPanel Orientation = 'Vertical'>
+                        <TextBlock FontSize="12" Text = '保存ファイル名' Style = '{ThemeResource CaptionTextBlockStyle}'/>
+                        <TextBox Margin="0,0,0,4" IsEnabled="{x:Bind FileViewModels.PdfAdapter.IsEnabeled,Mode=OneWay}" Text = '{x:Bind FileViewModels.PdfAdapter.FileNameToSave,Mode=TwoWay}' Style = '{ThemeResource CaptionTextBlockStyle}'/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0">
+                        <HyperlinkButton IsEnabled="{x:Bind FileViewModels.PdfAdapter.IsEnabeled,Mode=OneWay}" Click="HyperlinkButton_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <FontIcon Glyph="&#xE73E;" />
+                                <TextBlock Text="保存"></TextBlock>
+                            </StackPanel>
+                        </HyperlinkButton>
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
         </Grid>
-        <ProgressBar Value="{x:Bind PdfAdapter.ProgressValue,Mode=OneWay}" IsIndeterminate="{x:Bind PdfAdapter.IsBusyBar,Mode=OneWay}" ShowError="{x:Bind PdfAdapter.IsBarcodeReadFail,Mode=OneWay}" ShowPaused="False"></ProgressBar>
+        <ProgressBar Value="{x:Bind FileViewModels.PdfAdapter.ProgressValue,Mode=OneWay}" IsIndeterminate="{x:Bind FileViewModels.PdfAdapter.IsBusyBar,Mode=OneWay}" ShowError="{x:Bind FileViewModels.PdfAdapter.IsBarcodeReadFail,Mode=OneWay}" ShowPaused="False"></ProgressBar>
     </StackPanel>
 </UserControl>
