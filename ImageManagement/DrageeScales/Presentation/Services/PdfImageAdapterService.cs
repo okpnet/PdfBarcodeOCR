@@ -19,35 +19,53 @@ namespace DrageeScales.Presentation.Services
 {
     public class PdfImageAdapterService : IDisposable
     {
+        readonly ILogger _logger;
         CompositeDisposable _disposables = new();
         private ISubject<ImageMangementArgBase> _subject = new Subject<ImageMangementArgBase>();
 
-        readonly ILogger _logger;
+        public PdfFileItemCollection Collection { get; } 
 
-        public PdfFileItemCollection Collection { get; }
-
-        public PdfImageAdapterService()
+        public PdfImageAdapterService(PdfFileItemCollection pdfPageAdpters)
         {
-            var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),AppDefine.CASH_DIR_NAME);
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-            else
-            {
-                new DirectoryInfo(path).DeleteFilesAndDirExceptRootDirectory();
-            }
-            Collection = new PdfFileItemCollection() 
-            { 
-                TmpDir=path,
-            };
+            var path = CreateTempPath();
+            Collection = pdfPageAdpters;
         }
         /// <summary>
         /// コンストラクタ
         /// </summary>
         /// <param name="logger"></param>
-        public PdfImageAdapterService(ILogger<PdfImageAdapterService> logger) : this() => _logger = logger;
+        public PdfImageAdapterService(PdfFileItemCollection pdfPageAdpters,ILogger<PdfImageAdapterService> logger):this(pdfPageAdpters)
+        {
+            _logger= logger;
+            var path = CreateTempPath();
+            Collection.TmpDir = path;
+        }
 
+        protected string CreateTempPath()
+        {
+            var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), AppDefine.CASH_DIR_NAME);
+            try
+            {
+                if (!Directory.Exists(path))
+                {
+                    
+                    Directory.CreateDirectory(path);
+                    _logger?.LogInformation("CREATE DIR {path}", path);
+                }
+                else
+                {
+                    
+                    new DirectoryInfo(path).DeleteFilesAndDirExceptRootDirectory();
+                    _logger?.LogInformation("DLETE FIRN IN DIR {path}", path);
+                }
+                return path;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogWarning(ex, "DIR ERROR {path}", path);
+                throw;
+            }
+        }
 
         protected async Task OnRemovePdfPageAdapter(PdfPageAdpter removeItem)
         {
@@ -114,20 +132,37 @@ namespace DrageeScales.Presentation.Services
             {
                 return;
             }
-            var numOfTasks = paths.Length;
-            var numOfComplete = 0;
-            var tasks=paths.Select(async t =>
+            try
             {
-                await Collection.AddItemAsync(t);
-                var done = Interlocked.Increment(ref numOfComplete);
-                var percent = numOfComplete == 0 ? 0 : done * 100 / numOfTasks;
-                progress.Report(percent);
-                _logger?.LogInformation($"CONVERT PDF TO IMAGE FILE:{System.IO.Path.GetFileNameWithoutExtension(t)}");
-            });
+                var numOfTasks = paths.Length;
+                var numOfComplete = 0;
+                var tasks=paths.Select(async t =>
+                {
+                    try
+                    {
+                        var done = Interlocked.Increment(ref numOfComplete);
+                        var percent = numOfComplete == 0 ? 0 : done * 100 / numOfTasks;
+                        progress.Report(percent);
+                        await Collection.AddItemAsync(t);
+                        await Task.Delay(1000);
+                        _logger?.LogInformation($"CONVERT PDF TO IMAGE FILE:{System.IO.Path.GetFileNameWithoutExtension(t)}");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "CL:{class} M:{method} EXCEPTION",this.GetType().Name,nameof(PdfImageAdapterService.OnGetPdfItemsAsync));
+                        throw;
+                    }
 
-            await Task.WhenAll(tasks);
-            await Task.Delay(500);
-            _logger?.LogInformation($"COMPLETE ADD {numOfTasks} FILES.");
+                });
+
+                await Task.WhenAll(tasks);
+                await Task.Delay(1000);
+                _logger?.LogInformation($"COMPLETE ADD {numOfTasks} FILES.");
+            }catch(Exception ex)
+            {
+                _logger.LogWarning(ex, "CL:{class} M:{method} EXCEPTION", this.GetType().Name, nameof(PdfImageAdapterService.OnGetPdfItemsAsync));
+                throw;
+            }
         }
 
         public async Task OnReadBarcodeFromImage(IProgress<int> progress)

@@ -1,6 +1,7 @@
 ﻿using DrageeScales.Presentation.Services;
 using DrageeScales.Shared.Dtos;
 using DrageeScales.Shared.Services.Configs;
+using Microsoft.Extensions.Logging;
 using PdfConverer.PdfProcessing;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,7 @@ namespace DrageeScales.Views.Dtos
 {
     public class MainWindowModel: ViewModelBase,IDisposable,INotifyPropertyChanged
     {
+        readonly ILogger? _logger;
         CompositeDisposable _disposables = new();
         Subject<object> _subject = new();
 
@@ -41,7 +43,7 @@ namespace DrageeScales.Views.Dtos
 
         public PdfImageAdapterService Service { get; }
 
-        public PdfFileItemCollection Collection => (PdfFileItemCollection)Service.Collection;
+        public PdfFileItemCollection Collection => Service.Collection;
 
         ModalOptionBase _modalOptionBases;
         public ModalOptionBase ModalOptionBases 
@@ -72,9 +74,10 @@ namespace DrageeScales.Views.Dtos
             }
         }
 
-        public MainWindowModel(IConfigService<AppSetting> configService, PdfImageAdapterService service):base(configService)
+        public MainWindowModel(IConfigService<AppSetting> configService, PdfImageAdapterService service,ILogger<MainWindowModel> logger):base(configService)
         {
             Service = service;
+            _logger = logger;
             ModalOptionBases = new BusyModalOption();
             CollectionAnyEvent=_subject.AsObservable<object>().OfType<bool>();
             _disposables.Add(
@@ -103,16 +106,23 @@ namespace DrageeScales.Views.Dtos
                 var progressTotal = new Progress<int>();
                 var progressFile = new Progress<int>(t => { 
                     fileProgress = t;
-                    ((IProgress<int>)progressTotal).Report((fileProgress / 2) + (barcodeProgress / 2));
+                    var report = (fileProgress / 2) + (barcodeProgress / 2);
+                    _logger.LogInformation("CONVERTING OnGetPdfItemsAsync {percent}%.", report);
+                    ((IProgress<int>)progressTotal).Report(report);
                 });
                 var progressBarcode = new Progress<int>(t =>
                 {
                     barcodeProgress = t;
-                    ((IProgress<int>)progressTotal).Report((fileProgress / 2) + (barcodeProgress / 2));
+                    var report = (fileProgress / 2) + (barcodeProgress / 2);
+                    _logger.LogInformation("CONVERTING OnReadBarcodeFromImage {percent}%.", report);
+                    ((IProgress<int>)progressTotal).Report(report);
                 });
-
+                
                 ModalOptionBases = new ProgressModalOption(progressTotal);
                 ModalOptionBases.IsEnabled = true;
+
+                await Task.Delay(200);
+
                 await Service.OnGetPdfItemsAsync(progressFile, unContainsFiles);
                 await Service.OnReadBarcodeFromImage(progressBarcode);
             }

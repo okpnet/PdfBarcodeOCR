@@ -1,8 +1,10 @@
 using DrageeScales.Shared.Dtos;
 using DrageeScales.Views.Dtos;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -12,6 +14,7 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
+using System.Reactive;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -23,23 +26,38 @@ namespace DrageeScales
     /// </summary>
     public sealed partial class MainWindow : Window,IDisposable
     {
+        readonly ILogger? _logger;
         CompositeDisposable _disposables = new();
+        string _state = "Informations";
         /// <summary>
         /// インジェクション
         /// </summary>
         public MainWindowModel WindowModel { get; }
 
-        public MainWindow(MainWindowModel mainWindowModel)
+
+        public MainWindow(MainWindowModel mainWindowModel, ILogger<MainWindow> logger)
         {
             this.InitializeComponent();
+            _logger = logger;
             WindowModel = mainWindowModel;
-            _disposables.Add( WindowModel.CollectionAnyEvent.Subscribe(t => StateChange(t)));
+            //_disposables.Add(WindowModel.CollectionAnyEvent.Subscribe(t =>
+            //{
+            //    DispatcherQueue.TryEnqueue(() => StateChange(t));
+            //}));
+
+            _logger.LogInformation("INITILIZED MAINWINDOW");
         }
 
-        private void StateChange(bool isCollectionAny)
+        private void StateChange(bool isChangeState)
         {
-            var state = isCollectionAny ? "Collections" : "Infomation";
-            VisualStateManager.GoToState(RootPage, state, false);
+            var state = isChangeState ? "Collections" : "Informations";
+            if(_state == state)
+            {
+                return;
+            }
+            _state = state;
+            var result=VisualStateManager.GoToState(RootPage, _state, false);
+            _logger.LogInformation("STATE CHANGED {state} IS {result}",state,result);
         }
 
         private async Task<StorageFolder> ShowFolderPicker()
@@ -56,7 +74,7 @@ namespace DrageeScales
             picker.FileTypeFilter.Add(".pdf");
             InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(this));
             var files = await picker.PickMultipleFilesAsync();
-            if (files is null)
+            if (files is null || files.Count==0)
             {
                 return;
             }
@@ -71,6 +89,7 @@ namespace DrageeScales
             {
                 return;
             }
+            
             await WindowModel.OnSaveAllFile(folder.Path);
         }
 
@@ -91,6 +110,10 @@ namespace DrageeScales
                 return;
             }
             var items = await e.DataView.GetStorageItemsAsync();
+            if (items.Count == 0)
+            {
+                return;
+            }
             await WindowModel.OnOpenSource(items.Select(t => t.Path));
         }
 

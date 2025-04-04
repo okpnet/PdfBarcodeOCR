@@ -1,11 +1,13 @@
 ﻿using DrageeScales.Core;
 using DrageeScales.Views.Dtos;
+using Microsoft.Extensions.Logging;
 using PdfConverer.PdfProcessing;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DrageeScales.Presentation.Services
@@ -16,6 +18,8 @@ namespace DrageeScales.Presentation.Services
     public class PdfFileItemCollection : ObservableCollection<PdfPageAdpter>, IParentPdfFileItem, IPdfFileItemCollection, IDisposable, IProcessingModel
     {
         private IList<IPdf> _pdfList = new List<IPdf>();
+        private ReaderWriterLockSlim _lock = new();
+        readonly ILogger _logger;
 
         public bool IsAny => this.Any();
         /// <summary>
@@ -28,6 +32,11 @@ namespace DrageeScales.Presentation.Services
         public IEnumerable<PdfPageAdpter> PdfFileItems => this;
 
         public bool IsBusy { get; set; }
+
+        public PdfFileItemCollection(ILogger<PdfFileItemCollection> logger)
+        {
+            _logger = logger;
+        }
 
         public async Task AddItemAsync(string filePath, IProgress<(int, int)>? progress = null)
         {
@@ -46,12 +55,14 @@ namespace DrageeScales.Presentation.Services
         public async Task AddRangeAsyn(IEnumerable<string> filePaths, IProgress<(int, int)>? progress = null)
         {
             var tasks = new List<Task>();
-            foreach (var filePath in filePaths)
-            {
-                tasks.Add(AddItem(filePath, TmpDir));
-            }
+            
+
             try
             {
+                foreach (var filePath in filePaths)
+                {
+                    tasks.Add(AddItem(filePath, TmpDir));
+                }
                 IsBusy = true;
                 await Task.WhenAll(tasks);
             }
@@ -88,12 +99,25 @@ namespace DrageeScales.Presentation.Services
             var item = new PdfItem(filePath, tmpDirPath);
             _pdfList.Add(item);
             await item.InitilizePageAsync();
+
+            var tasks=new List<Task>();
             foreach (var page in item.Pages)
             {
                 var addItem = new PdfPageAdpter(this, page,(t)=>this.Remove(t));
-                Add(addItem);
-                await addItem.Initialize();
+                try
+                {
+                    _lock.EnterWriteLock();
+                    Add(addItem);
+                    _logger.LogInformation("ADD PDF ITEM {item}",addItem.FileNameToSave);
+                }
+                finally
+                {
+                    _lock.ExitWriteLock();
+                }
+                tasks.Add(addItem.Initialize());
             }
+            await Task.WhenAll(tasks);
+            _logger.LogInformation("PDF ITEM INITIALIZED");
         }
 
         public void Dispose()

@@ -15,20 +15,12 @@
                 <VisualStateGroup>
                     <VisualState x:Name="Collections">
                         <VisualState.Setters>
-                            <Setter Target="CollecionPanel.Visibility" Value="Visible"></Setter>
                             <Setter Target="InfoStack.Visibility" Value="Collapsed"></Setter>
                         </VisualState.Setters>
                     </VisualState>
-                    <VisualState x:Name="Infomation">
+                    <VisualState x:Name="Informations">
                         <VisualState.Setters>
-                            <Setter Target="CollecionPanel.Visibility" Value="Collapsed"></Setter>
                             <Setter Target="InfoStack.Visibility" Value="Visible"></Setter>
-                        </VisualState.Setters>
-                    </VisualState>
-                    <VisualState x:Name="None">
-                        <VisualState.Setters>
-                            <Setter Target="CollecionPanel.Visibility" Value="Collapsed"></Setter>
-                            <Setter Target="InfoStack.Visibility" Value="Collapsed"></Setter>
                         </VisualState.Setters>
                     </VisualState>
                 </VisualStateGroup>
@@ -46,9 +38,9 @@
                         </AppBarButton.Icon>
                     </AppBarButton>
                 </StackPanel>
-                <collectionViews:FileItemCollectionView Visibility="Collapsed" x:Name="CollecionPanel" PdfPageAdpters="{x:Bind WindowModel.Collection,Mode=OneWay}"></collectionViews:FileItemCollectionView>
+                <collectionViews:FileItemCollectionView x:Name="CollectionPanel" PdfPageAdpters="{x:Bind WindowModel.Collection,Mode=OneWay}"></collectionViews:FileItemCollectionView>
             </StackPanel>
-            <StackPanel Visibility="Visible" x:Name="InfoStack" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel Visibility="Collapsed" x:Name="InfoStack" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock  FontSize="24" Text="ファイルをドラッグ＆するか、ボタンからファイルを選択してください"></TextBlock>
                 <FontIcon Foreground="Red" Margin="0,16,0,0" FontSize="36" Glyph="&#xEA90;"></FontIcon>
                 <HyperlinkButton Margin="0,32,0,0" Width="240" Height="64" x:Name="InfoPaneBtn" Click="OpenFileBtn_Click" HorizontalAlignment="Center" >

@@ -40,16 +40,16 @@ namespace DrageeScales
         public App()
         {
             this.InitializeComponent();
+
+            var logDirectory = System.IO.Path.Combine(AppContext.BaseDirectory, "Logs");
+            Directory.CreateDirectory(logDirectory);  // フォルダがなければ作成
             //ログサービス
             Serilog.Log.Logger = new LoggerConfiguration().
                     Enrich.FromLogContext().
-#if DEBUG       
                     WriteTo.Debug().
                     MinimumLevel.Verbose().
-#else
                     MinimumLevel.Information().
-                    WriteTo.File("log.txt", rollingInterval: RollingInterval.Day).
-#endif
+                    WriteTo.File(System.IO.Path.Combine(logDirectory,"log.txt"), rollingInterval: RollingInterval.Day).
                     CreateLogger();
             //サービスホスト
             _host = Host.CreateDefaultBuilder()
