@@ -89,7 +89,8 @@ namespace DrageeScales
             {
                 return;
             }
-            
+            StateChange(true);
+            await Task.Delay(200);
             await WindowModel.OnSaveAllFile(folder.Path);
         }
 
@@ -114,6 +115,7 @@ namespace DrageeScales
             {
                 return;
             }
+            await Task.Delay(200);
             await WindowModel.OnOpenSource(items.Select(t => t.Path));
         }
 
