@@ -22,7 +22,7 @@ namespace DrageeScales.Views.Controls
 {
     public sealed partial class FileItemCollectionView : UserControl
     {
-        public PdfFileItemCollection PdfPageAdpters { get; set; }
+        public PdfFileItemCollection PdfPageAdpters { get; set; } = new();
 
         public FileItemCollectionView()
         {

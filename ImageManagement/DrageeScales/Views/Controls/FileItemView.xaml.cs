@@ -13,14 +13,15 @@ namespace DrageeScales.Views.Controls
 {
     public sealed partial class FileItemView : UserControl
     {
-        FileViewModel FileViewModels { get; set; }
+        FileViewModel _fileViewModel = new();
+        FileViewModel FileViewModels => _fileViewModel;
 
-        public PdfPageAdpter PdfAdapter { get=>FileViewModels.PdfAdapter; set=>FileViewModels.PdfAdapter=value; }
+        public PdfPageAdpter PdfAdapter { get=> _fileViewModel.PdfAdapter; set=> _fileViewModel.PdfAdapter=value; }
 
         public FileItemView()
         {
             this.InitializeComponent();
-            FileViewModels = new();
+            _fileViewModel = new();
         }
 
         private async void HyperlinkButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

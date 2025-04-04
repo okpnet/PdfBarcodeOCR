@@ -32,8 +32,11 @@ namespace DrageeScales.Presentation.Services
         public IEnumerable<PdfPageAdpter> PdfFileItems => this;
 
         public bool IsBusy { get; set; }
+        public PdfFileItemCollection()
+        {
 
-        public PdfFileItemCollection(ILogger<PdfFileItemCollection> logger)
+        }
+        public PdfFileItemCollection(ILogger<PdfFileItemCollection> logger):this()
         {
             _logger = logger;
         }

@@ -21,27 +21,29 @@
                     <Image Source="{x:Bind FileViewModels.PdfAdapter.ThumbnailImageSource,Mode=OneWay}"  Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center"></Image>
                 </Button>
             </Grid>
-            <StackPanel Grid.Column = '1' Margin="8,0,0,8" Orientation="Vertical" VerticalAlignment="Top">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Style="{StaticResource AlternateCloseButtonStyle}" IsEnabled="{x:Bind FileViewModels.PdfAdapter.IsEnabeled,Mode=OneWay}" Click="Button_Click">
-                        <FontIcon Glyph="&#xE74D;"></FontIcon>
-                    </Button>
-                </StackPanel>
-                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                    <StackPanel Orientation = 'Vertical'>
-                        <TextBlock FontSize="12" Text = '保存ファイル名' Style = '{ThemeResource CaptionTextBlockStyle}'/>
-                        <TextBox Margin="0,0,0,4" IsEnabled="{x:Bind FileViewModels.PdfAdapter.IsEnabeled,Mode=OneWay}" Text = '{x:Bind FileViewModels.PdfAdapter.FileNameToSave,Mode=TwoWay}' Style = '{ThemeResource CaptionTextBlockStyle}'/>
+            <Grid Grid.Column = '1' Margin="8,0,0,8">
+                <StackPanel  Orientation="Vertical" VerticalAlignment="Top">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Style="{StaticResource AlternateCloseButtonStyle}" IsEnabled="{x:Bind FileViewModels.PdfAdapter.IsEnabeled,Mode=OneWay}" Click="Button_Click">
+                            <FontIcon Glyph="&#xE74D;"></FontIcon>
+                        </Button>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0">
-                        <HyperlinkButton IsEnabled="{x:Bind FileViewModels.PdfAdapter.IsEnabeled,Mode=OneWay}" Click="HyperlinkButton_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <FontIcon Glyph="&#xE73E;" />
-                                <TextBlock Text="保存"></TextBlock>
-                            </StackPanel>
-                        </HyperlinkButton>
+                    <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                        <StackPanel Orientation = 'Vertical'>
+                            <TextBlock FontSize="12" Text = '保存ファイル名' Style = '{ThemeResource CaptionTextBlockStyle}'/>
+                            <TextBox Margin="0,0,0,4"  Text = '{x:Bind FileViewModels.PdfAdapter.FileNameToSave,Mode=TwoWay}' IsEnabled="{x:Bind FileViewModels.PdfAdapter.IsEnabeled,Mode=OneWay}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0">
+                            <HyperlinkButton IsEnabled="{x:Bind FileViewModels.PdfAdapter.IsEnabeled,Mode=OneWay}" Click="HyperlinkButton_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <FontIcon Glyph="&#xE73E;" />
+                                    <TextBlock Text="保存"></TextBlock>
+                                </StackPanel>
+                            </HyperlinkButton>
+                        </StackPanel>
                     </StackPanel>
                 </StackPanel>
-            </StackPanel>
+            </Grid>
         </Grid>
         <ProgressBar Value="{x:Bind FileViewModels.PdfAdapter.ProgressValue,Mode=OneWay}" IsIndeterminate="{x:Bind FileViewModels.PdfAdapter.IsBusyBar,Mode=OneWay}" ShowError="{x:Bind FileViewModels.PdfAdapter.IsBarcodeReadFail,Mode=OneWay}" ShowPaused="False"></ProgressBar>
     </StackPanel>

@@ -13,7 +13,7 @@ namespace DrageeScales.Views.Dtos
     public class FileViewModel: NotifyPropertyChangedBase,INotifyPropertyChanged
     {
         readonly ILogger? _logger;
-        PdfPageAdpter _pdfAdapter;
+        PdfPageAdpter _pdfAdapter=new();
         public PdfPageAdpter PdfAdapter
         {
             get => _pdfAdapter;

@@ -155,6 +155,15 @@ namespace DrageeScales.Views.Dtos
         /// </summary>
         public bool IsInit { get; protected set; }
 
+        public PdfPageAdpter()
+        {
+            IsInit = false;
+            _parent = default!;
+            _pdfPage = default!;
+            var saveFileName = $"{DateTime.Now.ToString("F")}-{Guid.NewGuid()}";
+            _fileNameToSave = saveFileName;
+            _removeAction = default!;
+        }
 
         public PdfPageAdpter(IParentPdfFileItem parent, IPdfPage pdfPage,Action<PdfPageAdpter> removeAction)
         {
