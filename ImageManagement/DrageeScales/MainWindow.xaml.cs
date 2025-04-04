@@ -40,10 +40,10 @@ namespace DrageeScales
             this.InitializeComponent();
             _logger = logger;
             WindowModel = mainWindowModel;
-            //_disposables.Add(WindowModel.CollectionAnyEvent.Subscribe(t =>
-            //{
-            //    DispatcherQueue.TryEnqueue(() => StateChange(t));
-            //}));
+            _disposables.Add(WindowModel.CollectionAnyEvent.Subscribe(t =>
+            {
+                DispatcherQueue.TryEnqueue(() => StateChange(t));
+            }));
 
             _logger.LogInformation("INITILIZED MAINWINDOW");
         }
