@@ -37,13 +37,21 @@
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
         <Rectangle Fill="LightGray" Opacity="{x:Bind BaseOption.Opacity,Mode=OneWay}" ></Rectangle>
-        <StackPanel x:Name="StatePanel" Visibility="{x:Bind BaseOption.IsModalVisible,Mode=OneWay}" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <!--<StackPanel x:Name="StatePanel" Visibility="{x:Bind BaseOption.IsModalVisible,Mode=OneWay}" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
             <ProgressRing x:Name="ProgressRing" Visibility="Collapsed"  IsIndeterminate="false" Width="124" Height="124" Value="{x:Bind ProgressModalOption.ProgressValue,Mode=OneWay}"></ProgressRing>
             <ProgressRing x:Name="BusyRing" Visibility="Collapsed"  IsIndeterminate="{x:Bind BusyModalOption.IsBusy}" Width="124" Height="124"></ProgressRing>
             <StackPanel x:Name="ProgressPercent" Visibility="Collapsed" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
                 <TextBlock FontSize="24" Text="{x:Bind ProgressModalOption.ProgressValue,Mode=OneWay}"></TextBlock>
-                <TextBlock FontSize="16" Text=" %"></TextBlock>
+                <TextBlock Margin="8,8,0,0" FontSize="16" Text="%"></TextBlock>
             </StackPanel>
-        </StackPanel>
+        </StackPanel>-->
+        <Grid x:Name="StatePanel" Visibility="{x:Bind BaseOption.IsModalVisible,Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <ProgressRing x:Name="ProgressRing" Visibility="Collapsed"  IsIndeterminate="false" Width="124" Height="124" Value="{x:Bind ProgressModalOption.ProgressValue,Mode=OneWay}"></ProgressRing>
+            <ProgressRing x:Name="BusyRing" Visibility="Collapsed"  IsIndeterminate="{x:Bind BusyModalOption.IsBusy}" Width="124" Height="124"></ProgressRing>
+            <StackPanel x:Name="ProgressPercent" Visibility="Collapsed" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock FontSize="24" Text="{x:Bind ProgressModalOption.ProgressValue,Mode=OneWay}"></TextBlock>
+                <TextBlock Margin="8,8,0,0" FontSize="16" Text="%"></TextBlock>
+            </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>

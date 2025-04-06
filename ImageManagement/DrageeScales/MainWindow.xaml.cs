@@ -7,6 +7,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Graphics;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
@@ -33,6 +34,16 @@ namespace DrageeScales
         public MainWindow(MainWindowModel mainWindowModel, ILogger<MainWindow> logger)
         {
             this.InitializeComponent();
+            ExtendsContentIntoTitleBar = true;
+            SetTitleBar(TitleBar);
+
+            //Win32‚ÌÝ’è
+            IntPtr hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+            var m_AppWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
+            //m_AppWindow.SetTaskbarIcon("Asssets/appicon.ico");
+            m_AppWindow.SetIcon("Assets/appicon.ico");
+
             _logger = logger;
             WindowModel = mainWindowModel;
             _disposables.Add(WindowModel.CollectionAnyEvent.Subscribe(t =>
@@ -42,6 +53,8 @@ namespace DrageeScales
 
             _logger.LogInformation("INITILIZED MAINWINDOW");
         }
+
+        
 
         private void StateChange(bool isChangeState)
         {

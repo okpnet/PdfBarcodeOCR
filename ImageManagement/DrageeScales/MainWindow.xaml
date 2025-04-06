@@ -9,8 +9,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <Page x:Name="RootPage">
-        <Grid  Background="Transparent" AllowDrop="True" DragOver="Grid_DragOver" Drop="Grid_Drop">
+    <Page x:Name="RootPage" MinWidth="640" MinHeight="480">
+        <Grid>
             <VisualStateManager.VisualStateGroups>
                 <VisualStateGroup>
                     <VisualState x:Name="Collections">
@@ -25,30 +25,48 @@
                     </VisualState>
                 </VisualStateGroup>
             </VisualStateManager.VisualStateGroups>
-            <StackPanel Orientation="Vertical" VerticalAlignment="Top" x:Name="MainFrame">
-                <StackPanel Orientation="Horizontal" FlowDirection="LeftToRight">
-                    <AppBarButton Label="PDFを開く" x:Name="OpenFileBtn" Click="OpenFileBtn_Click">
-                        <AppBarButton.Icon>
-                            <FontIcon Glyph="&#xE838;" />
-                        </AppBarButton.Icon>
-                    </AppBarButton>
-                    <AppBarButton Label="ぜんぶ保存" x:Name="SaveBtn" IsEnabled="{x:Bind WindowModel.IsCollectionAny,Mode=OneWay}" Click="SaveBtn_Click">
-                        <AppBarButton.Icon>
-                            <FontIcon Glyph="&#xE73E;" />
-                        </AppBarButton.Icon>
-                    </AppBarButton>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" MinHeight="35" Orientation="Horizontal" Spacing="15" x:Name="TitleBar" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                    <!--<Image Source="/Assets/appicon.ico" Margin="8,0,0,0" Width="32" Height="32" />-->
+                    <TitleBar Width="64">
+                        <TitleBar.IconSource>
+                            <ImageIconSource ImageSource="/Assets/appicon.ico" />
+                        </TitleBar.IconSource>
+
+                    </TitleBar>
                 </StackPanel>
-                <collectionViews:FileItemCollectionView x:Name="CollectionPanel" PdfPageAdpters="{x:Bind WindowModel.Collection,Mode=OneWay}"></collectionViews:FileItemCollectionView>
+                <!--<TextBlock Margin="16,0,0,0" VerticalAlignment="Center" Text="{StaticResource AppTitle}" />
+                <AppBarButton Label="PDFを開く" x:Name="OpenFileBtn" Click="OpenFileBtn_Click">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE838;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>-->
+                <AppBarButton Label="ぜんぶ保存" x:Name="SaveBtn" IsEnabled="{x:Bind WindowModel.IsCollectionAny,Mode=OneWay}" Click="SaveBtn_Click">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE73E;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
             </StackPanel>
-            <StackPanel Visibility="Visible" x:Name="InfoStack" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock  FontSize="24" Text="ファイルをドラッグ＆するか、ボタンからファイルを選択してください"></TextBlock>
-                <FontIcon Foreground="Red" Margin="0,16,0,0" FontSize="36" Glyph="&#xEA90;"></FontIcon>
-                <HyperlinkButton Margin="0,32,0,0" Width="240" Height="64" x:Name="InfoPaneBtn" Click="OpenFileBtn_Click" HorizontalAlignment="Center" >
-                    <TextBlock FontSize="18" Text="ファイル選択"></TextBlock>
-                </HyperlinkButton>
-            </StackPanel>
-            <shared:OverlapModalProgressView BaseOption="{x:Bind WindowModel.ModalOptionBases,Mode=OneWay}"></shared:OverlapModalProgressView>
-            <shared:Toast Notifications="{x:Bind WindowModel.ToastItems,Mode=OneWay}" x:Name="ToastView"></shared:Toast>
+            <Grid Grid.Row="1" Background="Transparent" AllowDrop="True" DragOver="Grid_DragOver" Drop="Grid_Drop">
+
+                <StackPanel Orientation="Vertical" VerticalAlignment="Top" x:Name="MainFrame">
+                    <collectionViews:FileItemCollectionView x:Name="CollectionPanel" PdfPageAdpters="{x:Bind WindowModel.Collection,Mode=OneWay}"></collectionViews:FileItemCollectionView>
+                </StackPanel>
+                <StackPanel Visibility="Visible" x:Name="InfoStack" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock  FontSize="24" Text="ファイルをドラッグ＆するか、ボタンからファイルを選択してください"></TextBlock>
+                    <FontIcon Foreground="Red" Margin="0,16,0,0" FontSize="36" Glyph="&#xEA90;"></FontIcon>
+                    <HyperlinkButton Margin="0,32,0,0" Width="240" Height="64" x:Name="InfoPaneBtn" Click="OpenFileBtn_Click" HorizontalAlignment="Center" >
+                        <TextBlock FontSize="18" Text="ファイル選択"></TextBlock>
+                    </HyperlinkButton>
+                </StackPanel>
+                <shared:OverlapModalProgressView BaseOption="{x:Bind WindowModel.ModalOptionBases,Mode=OneWay}"></shared:OverlapModalProgressView>
+                <shared:Toast Notifications="{x:Bind WindowModel.ToastItems,Mode=OneWay}" x:Name="ToastView"></shared:Toast>
+            </Grid>
         </Grid>
+
     </Page>
 </Window>
