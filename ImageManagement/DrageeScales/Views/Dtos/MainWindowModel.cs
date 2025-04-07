@@ -101,29 +101,24 @@ namespace DrageeScales.Views.Dtos
             }
             try
             {
-                int fileProgress = 0;
-                int barcodeProgress = 0;
                 var progressTotal = new Progress<int>();
                 var progressFile = new Progress<int>(t => { 
-                    fileProgress = t;
-                    var report = (fileProgress / 2) + (barcodeProgress / 2);
-                    _logger.LogInformation("CONVERTING OnGetPdfItemsAsync {percent}%.", report);
-                    ((IProgress<int>)progressTotal).Report(report);
+                    _logger.LogInformation("CONVERTING OnGetPdfItemsAsync {percent}%.", t);
                 });
                 var progressBarcode = new Progress<int>(t =>
                 {
-                    barcodeProgress = t;
-                    var report = (fileProgress / 2) + (barcodeProgress / 2);
+                    var report = t;
                     _logger.LogInformation("CONVERTING OnReadBarcodeFromImage {percent}%.", report);
-                    ((IProgress<int>)progressTotal).Report(report);
+                    ((IProgress<int>)progressTotal).Report(t);
                 });
                 
-                ModalOptionBases = new ProgressModalOption(progressTotal);
+                ModalOptionBases = new BusyModalOption();
                 ModalOptionBases.IsEnabled = true;
-
                 await Task.Delay(200);
-
                 await Service.OnGetPdfItemsAsync(progressFile, unContainsFiles);
+                
+                ModalOptionBases = new ProgressModalOption(progressTotal);
+                await Task.Delay(200);
                 await Service.OnReadBarcodeFromImage(progressBarcode);
             }
             finally
