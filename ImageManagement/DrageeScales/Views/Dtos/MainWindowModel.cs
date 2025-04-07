@@ -116,9 +116,11 @@ namespace DrageeScales.Views.Dtos
                 ModalOptionBases.IsEnabled = true;
                 await Task.Delay(200);
                 await Service.OnGetPdfItemsAsync(progressFile, unContainsFiles);
-                
+                ModalOptionBases.IsEnabled = false;
+
                 ModalOptionBases = new ProgressModalOption(progressTotal);
                 await Task.Delay(200);
+                ModalOptionBases.IsEnabled = true;
                 await Service.OnReadBarcodeFromImage(progressBarcode);
             }
             finally
