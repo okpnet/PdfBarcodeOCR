@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using BarcodeImageReader.Shared;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using ZXing;
@@ -8,6 +9,7 @@ namespace BarcodeImageReader
 {
     public static class BarcodeReader
     {
+        static int RETRY = 10;
         public static IBarcodeItem ReadFromFile(string imagePath)
         {
             if (!System.IO.File.Exists(imagePath))
@@ -40,10 +42,18 @@ namespace BarcodeImageReader
             try
             {
                 var rebitmap = _correction(bitmap);
-                var reader = new ZXing.BarcodeReaderGeneric();
-                var source = new BitmapLuminanceSource(rebitmap);
+                if(!new ZXing.BarcodeReaderGeneric().TryGetValue(RETRY,100,out var reader,() => new ZXing.BarcodeReaderGeneric()))
+                {
+                    return BarcodeItem.FromUnableToRead();
+                }
+
+                if(!new BitmapLuminanceSource(rebitmap).TryGetValue(RETRY,100,out var source,()=> new BitmapLuminanceSource(rebitmap)))
+                {
+                    return BarcodeItem.FromUnableToRead();
+                }
                 reader.Options.TryInverted = true;
-                var result = reader.Decode(source);
+
+                var result = reader.Decode(source);//NullReferenceException
                 return result is null ? BarcodeItem.FromUnableToRead() : BarcodeItem.FromResult(new BarcodeResult(result));
             }
             catch (Exception ex)
