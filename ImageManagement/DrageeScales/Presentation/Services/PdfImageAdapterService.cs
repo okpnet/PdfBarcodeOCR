@@ -144,7 +144,7 @@ namespace DrageeScales.Presentation.Services
                         var percent = numOfComplete == 0 ? 0 : done * 100 / numOfTasks;
                         progress.Report(percent);
                         await Collection.AddItemAsync(t);
-                        await Task.Delay(1000);
+                        await Task.Delay(500);
                         _logger?.LogInformation($"CONVERT PDF TO IMAGE FILE:{System.IO.Path.GetFileNameWithoutExtension(t)}");
                     }
                     catch (Exception ex)
