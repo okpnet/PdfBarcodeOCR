@@ -5,21 +5,18 @@ using NetSparkleUpdater.Enums;
 using NetSparkleUpdater.SignatureVerifiers;
 using Serilog.Core;
 using System;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace DrageeScales.Shared.Services.NetspakleUpdate
 {
     public class NetSparkleService : IDisposable
     {
-        const string APPCAST_URL = "https://www.dropbox.com/s/hojfguq50g91fqe/appcast.xml?dl=1";
-        const string PUBLIC_KEY_PATH = "NetSparkle_Ed25519.pub";
-        const string DEFAULT_FILE_NAME = "Installer";
         readonly ILogger _logger;
         readonly Subject<UpdateEventArg> _subject;
         /// <summary>
@@ -37,7 +34,15 @@ namespace DrageeScales.Shared.Services.NetspakleUpdate
         /// <summary>
         /// ダウンロードファイルパス
         /// </summary>
-        string _downloadPath = string.Empty;
+        FileInfo _downloadPath = default;
+        /// <summary>
+        /// AppcastURL
+        /// </summary>
+        Uri _appcastUrl = default;
+        /// <summary>
+        /// 公開鍵パス
+        /// </summary>
+        FileInfo _publicKeyPath = default;
         /// <summary>
         /// Sparkleインスタンス
         /// </summary>
@@ -61,14 +66,17 @@ namespace DrageeScales.Shared.Services.NetspakleUpdate
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        public NetSparkleService(Action appclose)
+        public NetSparkleService(Action appclose,FileInfo publicKeyPath,Uri appcastUrl, FileInfo downloadPath)
         {
+            
+            _appcastUrl = appcastUrl;
+            _downloadPath = downloadPath;
             AppCloseAction = appclose;
             UpdateReady = false;
             _sparkle = new SparkleUpdater
                 (
-                    APPCAST_URL,
-                    new Ed25519Checker(SecurityMode.Unsafe, PUBLIC_KEY_PATH)
+                    _appcastUrl.AbsoluteUri,
+                    new Ed25519Checker(SecurityMode.Unsafe, publicKeyPath.FullName)
                 )
             {
                 UIFactory = null,
@@ -83,7 +91,7 @@ namespace DrageeScales.Shared.Services.NetspakleUpdate
             _info = _sparkle.CheckForUpdatesQuietly().Result;
         }
 
-        public NetSparkleService(ILogger<NetSparkleService> logger, Action appclose) : this(appclose)
+        public NetSparkleService(ILogger<NetSparkleService> logger, Action appclose, FileInfo publicKeyPath, Uri appcastUrl, FileInfo downloadPath) : this(appclose, publicKeyPath, appcastUrl, downloadPath)
         {
             _logger = logger;
         }
@@ -119,7 +127,7 @@ namespace DrageeScales.Shared.Services.NetspakleUpdate
                     var updater = _info.Updates.LastOrDefault();
                     if (updater is null) return;
 
-                    _downloadPath = t.EventArgs;
+                    _downloadPath =new(t.EventArgs);
                     _subject.OnNext(UpdateEventArg.StandbyUpdate());
                     UpdateReady = true;
                 })
@@ -158,14 +166,14 @@ namespace DrageeScales.Shared.Services.NetspakleUpdate
         /// </summary>
         public void Update()
         {
-            if (_sparkle is null || _info is null || string.IsNullOrEmpty(_downloadPath)) return;
+            if (_sparkle is null || _info is null || _downloadPath is null) return;
             var updateDate = _info.Updates.FirstOrDefault();
             if (updateDate is not null && updateDate.IsWindowsUpdate)
             {
-                var exepath = GetNewFileName(_downloadPath, updateDate.Version);
+                var exepath = GetNewFileName(_downloadPath.FullName, updateDate.Version);
                 try
                 {
-                    System.IO.File.Move(_downloadPath, exepath, true);
+                    System.IO.File.Move(_downloadPath.FullName, exepath, true);
                     _sparkle.InstallUpdate(updateDate, exepath);
                 }
                 catch (Exception ex)
