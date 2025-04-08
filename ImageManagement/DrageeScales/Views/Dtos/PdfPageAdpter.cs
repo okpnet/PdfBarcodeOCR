@@ -92,7 +92,8 @@ namespace DrageeScales.Views.Dtos
                 {
                     return;
                 }
-                _thumbnail = value;
+
+                _thumbnail =new Bitmap(value);
                 ThumbnailImageSource =_thumbnail.ConvertImage(ImageFormat.Bmp);
                 OnPropertyChanged(nameof(Thumbnail));
                 OnPropertyChanged(nameof(ThumbnailImageSource));
@@ -208,12 +209,20 @@ namespace DrageeScales.Views.Dtos
                     {
                         ProgressValue = t;
                     }));
-                if (result.IsSucces)
+                image.Dispose();
+                if (!result.IsSucces)
                 {
-                    FileNameToSave = result.Value;
-                    var imageDec = await WinThumbnailHelper.ImageDecorator.CreateAsync(_pdfPage.ImagePath,result.Rectangles, AppDefine.THUMBNAIL_SIZE);
-                    Thumbnail = imageDec.Thumbnail;
+                    return;
                 }
+                FileNameToSave = result.Value;
+                var imageDec = await WinThumbnailHelper.ImageDecorator.CreateAsync(_pdfPage.ImagePath, result.Rectangles, AppDefine.THUMBNAIL_SIZE);
+                if(imageDec.Thumbnail is null)
+                {
+                    throw new NullReferenceException($"imageDec has not image");
+                }
+                Thumbnail = imageDec.Thumbnail;
+                imageDec.Dispose();
+
             }
             finally
             {

@@ -45,17 +45,14 @@
                         <FontIcon Glyph="&#xE838;" />
                     </AppBarButton.Icon>
                 </AppBarButton>-->
-                <AppBarButton Label="ぜんぶ保存" x:Name="SaveBtn" IsEnabled="{x:Bind WindowModel.IsCollectionAny,Mode=OneWay}" Click="SaveBtn_Click">
+                <AppBarButton Label="ぜんぶ保存" x:Name="SaveBtn" IsEnabled="{x:Bind WindowModel.IsEnable,Mode=OneWay}" Click="SaveBtn_Click">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xE73E;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
             </StackPanel>
             <Grid Grid.Row="1" Background="Transparent" AllowDrop="True" DragOver="Grid_DragOver" Drop="Grid_Drop">
-
-                <StackPanel Orientation="Vertical" VerticalAlignment="Top" x:Name="MainFrame">
-                    <collectionViews:FileItemCollectionView x:Name="CollectionPanel" PdfPageAdpters="{x:Bind WindowModel.Collection,Mode=OneWay}"></collectionViews:FileItemCollectionView>
-                </StackPanel>
+                <collectionViews:FileItemCollectionView x:Name="CollectionPanel" PdfPageAdpters="{x:Bind WindowModel.Collection,Mode=OneWay}"></collectionViews:FileItemCollectionView>
                 <StackPanel Visibility="Visible" x:Name="InfoStack" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <TextBlock  FontSize="24" Text="ファイルをドラッグ＆するか、ボタンからファイルを選択してください"></TextBlock>
                     <FontIcon Foreground="Red" Margin="0,16,0,0" FontSize="36" Glyph="&#xEA90;"></FontIcon>
@@ -67,6 +64,5 @@
                 <shared:Toast Notifications="{x:Bind WindowModel.ToastItems,Mode=OneWay}" x:Name="ToastView"></shared:Toast>
             </Grid>
         </Grid>
-
     </Page>
 </Window>

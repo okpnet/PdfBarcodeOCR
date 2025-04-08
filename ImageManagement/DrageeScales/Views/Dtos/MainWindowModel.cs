@@ -23,19 +23,18 @@ namespace DrageeScales.Views.Dtos
         CompositeDisposable _disposables = new();
         Subject<object> _subject = new();
 
-        bool _isCollectionAny = false;
-        public bool IsCollectionAny 
+        bool _isEnable = false;
+        public bool IsEnable 
         {
-            get => _isCollectionAny;
+            get => _isEnable;
             private set
             {
-                if (_isCollectionAny == value)
+                if (_isEnable == value)
                 {
                     return;
                 }
-                _isCollectionAny = value;
-                _subject.OnNext(value);
-                OnPropertyChanged(nameof(IsCollectionAny));
+                _isEnable = value;
+                OnPropertyChanged(nameof(IsEnable));
             }
         }
 
@@ -80,14 +79,6 @@ namespace DrageeScales.Views.Dtos
             _logger = logger;
             ModalOptionBases = new BusyModalOption();
             CollectionAnyEvent=_subject.AsObservable<object>().OfType<bool>();
-            _disposables.Add(
-                Observable.FromEventPattern<NotifyCollectionChangedEventArgs>(
-                Service.Collection, $"{nameof(ObservableCollection<PdfPageAdpter>.CollectionChanged)}").
-                Subscribe(t => 
-                {
-                    IsCollectionAny = Service.Collection.IsAny;
-                })
-                );
         }
 
         public async Task OnOpenSource(IEnumerable<string> source)
@@ -101,6 +92,7 @@ namespace DrageeScales.Views.Dtos
             }
             try
             {
+                IsEnable = false;
                 var progressTotal = new Progress<int>();
                 var progressFile = new Progress<int>(t => { 
                     _logger.LogInformation("CONVERTING OnGetPdfItemsAsync {percent}%.", t);
@@ -128,6 +120,7 @@ namespace DrageeScales.Views.Dtos
                 ModalOptionBases.IsEnabled = false;
                 var message = $"{unContainsFiles.Length} ファイル処理しました" + (numOfDuplicateFiles > 0 ? $"。 {numOfDuplicateFiles} ファイルは登録されています。":""); 
                 ToastItems.Add(new ToastItem(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Success, message));
+                IsEnable = true;
             }
         }
 
@@ -136,7 +129,7 @@ namespace DrageeScales.Views.Dtos
             try
             {
                 var progressTotal = new Progress<int>();
-                ModalOptionBases = new ProgressModalOption(progressTotal);
+                ModalOptionBases = new BusyModalOption();
                 ModalOptionBases.IsEnabled = true;
                 await Service.OnSaveToPdfAllImages(progressTotal, path);
             }
