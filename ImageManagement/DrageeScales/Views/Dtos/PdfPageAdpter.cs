@@ -1,8 +1,9 @@
 ﻿using DrageeScales.Core;
 using DrageeScales.Helper;
+using DrageeScales.Presentation.Services;
+using DrageeScales.Shared.Dtos;
 using DrageeScales.Shared.Helper;
 using Microsoft.UI.Xaml.Media;
-using PdfConverer.Helper;
 using PdfConverer.PdfProcessing;
 using System;
 using System.ComponentModel;
@@ -10,8 +11,6 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
-using Windows.Storage;
 
 namespace DrageeScales.Views.Dtos
 {
@@ -20,6 +19,8 @@ namespace DrageeScales.Views.Dtos
         protected readonly IParentPdfFileItem _parent;
 
         protected readonly Action<PdfPageAdpter> _removeAction;
+
+        protected readonly AppSetting _appSetting;
 
         public string Test { get; set; } = "TEST";
 
@@ -166,9 +167,10 @@ namespace DrageeScales.Views.Dtos
             _removeAction = default!;
         }
 
-        public PdfPageAdpter(IParentPdfFileItem parent, IPdfPage pdfPage,Action<PdfPageAdpter> removeAction)
+        public PdfPageAdpter(IParentPdfFileItem parent, IPdfPage pdfPage,AppSetting setting ,Action<PdfPageAdpter> removeAction)
         {
             IsInit = false;
+            _appSetting = setting;
             _parent = parent;
             _pdfPage = pdfPage;
             var saveFileName = _pdfPage.Parent is not IPdfFile file ? $"{DateTime.Now.ToString("F")}-{Guid.NewGuid()}" : System.IO.Path.GetFileNameWithoutExtension(file.BaseFilePath);
@@ -204,7 +206,7 @@ namespace DrageeScales.Views.Dtos
                     return;
                 }
 
-                result = await image.GetBarcodeResult(
+                result = await image.GetBarcodeResult(_appSetting,
                     new Progress<int>(t=>
                     {
                         ProgressValue = t;
@@ -222,7 +224,6 @@ namespace DrageeScales.Views.Dtos
                 }
                 Thumbnail = imageDec.Thumbnail;
                 imageDec.Dispose();
-
             }
             finally
             {

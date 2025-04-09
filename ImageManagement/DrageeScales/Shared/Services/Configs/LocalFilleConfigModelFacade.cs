@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 
 namespace DrageeScales.Shared.Services.Configs
@@ -42,18 +44,26 @@ namespace DrageeScales.Shared.Services.Configs
             if(settings is null)
             {
                 System.IO.File.Delete(FileName);
-                var result = new AppSetting();
-                Save(result);
-                return result;
+                settings = new AppSetting();
             }
+            Save(settings);
             return settings;
         }
 
         public void Save(AppSetting data)
         {
             using var stream=new System.IO.StreamWriter(FileName,false,Encoding.UTF8);
-            var buffer = System.Text.Json.JsonSerializer.Serialize(data);
+            var buffer = System.Text.Json.JsonSerializer.Serialize(data,GetOption());
             stream.Write(buffer);
+        }
+
+        System.Text.Json.JsonSerializerOptions GetOption()
+        {
+            return new System.Text.Json.JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+            };
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using DrageeScales.Core;
+using DrageeScales.Shared.Dtos;
+using DrageeScales.Shared.Services.Configs;
 using DrageeScales.Views.Dtos;
 using Microsoft.Extensions.Logging;
 using PdfConverer.PdfProcessing;
@@ -20,7 +22,7 @@ namespace DrageeScales.Presentation.Services
         private IList<IPdf> _pdfList = new List<IPdf>();
         private ReaderWriterLockSlim _lock = new();
         readonly ILogger _logger;
-
+        readonly IConfigService<AppSetting> _config;
         public bool IsAny => this.Any();
         /// <summary>
         /// 一時フォルダ
@@ -36,8 +38,9 @@ namespace DrageeScales.Presentation.Services
         {
 
         }
-        public PdfFileItemCollection(ILogger<PdfFileItemCollection> logger):this()
+        public PdfFileItemCollection(ILogger<PdfFileItemCollection> logger,IConfigService<AppSetting> config):this()
         {
+            _config = config;
             _logger = logger;
         }
 
@@ -106,7 +109,7 @@ namespace DrageeScales.Presentation.Services
             var tasks=new List<Task>();
             foreach (var page in item.Pages)
             {
-                var addItem = new PdfPageAdpter(this, page,(t)=>this.Remove(t));
+                var addItem = new PdfPageAdpter(this, page,_config.Config,(t)=>this.Remove(t));
                 try
                 {
                     _lock.EnterWriteLock();

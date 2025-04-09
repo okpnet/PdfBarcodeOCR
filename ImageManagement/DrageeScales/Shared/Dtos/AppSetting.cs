@@ -9,36 +9,22 @@ namespace DrageeScales.Shared.Dtos
 {
     public sealed class AppSetting: ModalOptionBase,INotifyPropertyChanged
     {
-        string _outputDir;
-        public string OutputDir 
+        string _regularFilter;
+        public string RegularExpressionFilter 
         {
-            get => _outputDir;
+            get => _regularFilter;
             set
             {
-                if (_outputDir == value)
+                if (_regularFilter == value)
                 {
                     return;
                 }
-                _outputDir = value;
-                OnPropertyChanged(nameof(OutputDir));
+                _regularFilter = value;
+                OnPropertyChanged(nameof(RegularExpressionFilter));
             }
         }
-        string _fileOpenDir;
-        public string FileOpenDir
-        {
-            get => _fileOpenDir;
-            set
-            {
-                if (_fileOpenDir == value)
-                {
-                    return;
-                }
-                _fileOpenDir = value;
-                OnPropertyChanged(nameof(FileOpenDir));
-            }
-        }
-
-        int _thumbnailRate = 256;
+        
+        int _thumbnailRate = AppDefine.THUMBNAIL_SIZE;
         public int ThumbnailRate 
         {
             get => _thumbnailRate;
@@ -53,17 +39,47 @@ namespace DrageeScales.Shared.Dtos
             }
         }
 
-        public AppSetting()
+        int _shreddedRate=AppDefine.SHREDDED_HEIGHT;
+        public int ShreddedRate
         {
-            _outputDir = System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            _fileOpenDir= System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            _thumbnailRate = 256;
+            get => _shreddedRate;
+            set
+            {
+                if(_shreddedRate == value)
+                {
+                    return;
+                }
+                _shreddedRate = value;
+                OnPropertyChanged(nameof(ShreddedRate));
+            }
         }
 
-        public AppSetting(string outputDir, string fileOpenDir, int thumbnailRate)
+        double _strechLength = AppDefine.STRECH_WIDTH;
+        public double StretchLength
         {
-            _outputDir = outputDir;
-            _fileOpenDir = fileOpenDir;
+            get => _strechLength;
+            set
+            {
+                if(_strechLength == value)
+                {
+                    return;
+                }
+                _strechLength = value;
+                OnPropertyChanged(nameof(StretchLength));
+            }
+        }
+
+        public AppSetting()
+        {
+            _regularFilter = "";
+            _thumbnailRate = AppDefine.THUMBNAIL_SIZE;
+            _shreddedRate= AppDefine.SHREDDED_HEIGHT;
+        }
+
+        public AppSetting(string regularExpressionFilter, int thumbnailRate, int shreddedRate)
+        {
+            _regularFilter = regularExpressionFilter;
+            _shreddedRate = shreddedRate;
             _thumbnailRate = thumbnailRate;
         }
     }

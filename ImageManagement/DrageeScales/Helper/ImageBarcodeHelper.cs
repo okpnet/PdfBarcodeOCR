@@ -1,4 +1,5 @@
 ﻿using BarcodeImageReader;
+using DrageeScales.Shared.Dtos;
 using DrageeScales.Views.Dtos;
 using System;
 using System.Collections.Generic;
@@ -38,7 +39,7 @@ namespace DrageeScales.Helper
         /// </summary>
         /// <param name="bitmap"></param>
         /// <returns></returns>
-        public static async Task<BarcodeParameter> GetBarcodeResult(this Bitmap bitmap,IProgress<int> progress)
+        public static async Task<BarcodeParameter> GetBarcodeResult(this Bitmap bitmap,AppSetting appSetting,IProgress<int> progress)
         {
             progress.Report(25);
             BarcodeParameter result = default!;
@@ -67,8 +68,6 @@ namespace DrageeScales.Helper
                 return BarcodeParameter.FromUnableRed();
             });
 
-
-
             if (result.IsSucces)
             {
                 return result;
@@ -76,13 +75,13 @@ namespace DrageeScales.Helper
 
             progress.Report(50);
             Image[] images = [];
-            var strechWidth = (int)(bitmap.Width * AppDefine.STRECH_WIDTH);
+            var strechWidth = (int)(bitmap.Width *  appSetting.StretchLength);
 
             try
             {
-                images = ImageShredded.BmpShredded.GetHorizotalShredded(bitmap, AppDefine.SHREDDED_HEIGHT).ToArray();
+                images = ImageShredded.BmpShredded.GetHorizotalShredded(bitmap, appSetting.ShreddedRate).ToArray();
                 //2回目。千切りにして読みやすくする
-                result = await Task.Run(() => images.OfType<Bitmap>().GetBarcodeValueShreddedHorizontal(AppDefine.SHREDDED_HEIGHT));
+                result = await Task.Run(() => images.OfType<Bitmap>().GetBarcodeValueShreddedHorizontal(appSetting));
 
                 if (result.IsSucces)
                 {
@@ -109,10 +108,10 @@ namespace DrageeScales.Helper
                         var strechImage = new Bitmap(strechWidth, AppDefine.SHREDDED_HEIGHT);
                         using var grph = Graphics.FromImage(strechImage);
                         grph.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                        grph.DrawImage(t, new Rectangle(0, 0, strechWidth, AppDefine.SHREDDED_HEIGHT));//ここのTをstrechImageにするとエラーにできる
+                        grph.DrawImage(t, new Rectangle(0, 0, strechWidth, appSetting.ShreddedRate));//ここのTをstrechImageにするとエラーにできる
                         return strechImage;
                     }).ToArray();
-                    var strechResult = strechImages.OfType<Bitmap>().GetBarcodeValueShreddedHorizontal(AppDefine.SHREDDED_HEIGHT);
+                    var strechResult = strechImages.OfType<Bitmap>().GetBarcodeValueShreddedHorizontal(appSetting);
                     foreach (var strechImage in strechImages)
                     {
                         strechImage.Dispose();
@@ -125,10 +124,10 @@ namespace DrageeScales.Helper
                         var prevRect = CheckedRect(
                             maxWidth,
                             maxHeight,
-                            (int)(strechResult.Rectangles.X / AppDefine.STRECH_WIDTH) - overrapW,
+                            (int)(strechResult.Rectangles.X / appSetting.StretchLength) - overrapW,
                             strechResult.Rectangles.Y - overrapW,
-                            (int)(strechResult.Rectangles.Width / AppDefine.STRECH_WIDTH) + (overrapW * 2),//Xのオーバーラップの分
-                            (int)(strechResult.Rectangles.Height / AppDefine.STRECH_WIDTH) + (overrapW * 2)
+                            (int)(strechResult.Rectangles.Width / appSetting.StretchLength) + (overrapW * 2),//Xのオーバーラップの分
+                            (int)(strechResult.Rectangles.Height / appSetting.StretchLength) + (overrapW * 2)
                             );//Yのオーバーラップの分
 
                         return BarcodeParameter.FromSuccess(strechResult.Value, prevRect, true);
@@ -157,7 +156,7 @@ namespace DrageeScales.Helper
         /// <param name="images"></param>
         /// <param name="shreddedpixel"></param>
         /// <returns></returns>
-        internal static BarcodeParameter GetBarcodeValueShreddedHorizontal(this IEnumerable<Bitmap> images, int shreddedHeight)
+        internal static BarcodeParameter GetBarcodeValueShreddedHorizontal(this IEnumerable<Bitmap> images,AppSetting appSetting)
         {
             var resultList = new List<IBarcodeItem>(images.Count());
             var index = 0;
@@ -179,7 +178,7 @@ namespace DrageeScales.Helper
                 Key;
             return BarcodeParameter.FromSuccess(
                 key,
-                GetHorizontalShreddedRect(resultList, key, shreddedHeight),
+                GetHorizontalShreddedRect(resultList,appSetting, key, appSetting.ShreddedRate),
                 true
                 );
         }
@@ -191,7 +190,7 @@ namespace DrageeScales.Helper
         /// <param name="valueKey"></param>
         /// <param name="shreddedHeight"></param>
         /// <returns></returns>
-        internal static Rectangle GetHorizontalShreddedRect(IEnumerable<IBarcodeItem> items, string valueKey, int shreddedHeight)
+        internal static Rectangle GetHorizontalShreddedRect(IEnumerable<IBarcodeItem> items,AppSetting appsetting, string valueKey, int shreddedHeight)
         {
             var records = items.Select((t,i)=>new { val=t, index=i }).Where(t => t.val.IsSuccessRead).Select(t =>
             {
@@ -199,11 +198,14 @@ namespace DrageeScales.Helper
                 return new { t.index, item = resultValue };
             });
 
-            var minx= records.Where(t => t is not null && t.item.Value == valueKey).Min(t => t.item.Rect.X);
-            var maxx = records.Where(t => t is not null && t.item.Value == valueKey).Select(t => t.item.Rect.Width + t.item.Rect.X).Max();
-            var miny = records.Where(t => t is not null && t.item.Value == valueKey).Min(t => t.index) * shreddedHeight - shreddedHeight * 2;
-            var maxy = records.Where(t => t is not null && t.item.Value == valueKey).Max(t =>t.index) * shreddedHeight;
+            var array = appsetting.RegularExpressionFilter is (null or "") ?
+                records.Where(t => t is not null && t.item.Value == valueKey) : 
+                records.Where(t => t is not null && t.item.Value == valueKey && System.Text.RegularExpressions.Regex.IsMatch(t.item.Value, appsetting.RegularExpressionFilter));
 
+            var minx= array.Min(t => t.item.Rect.X);
+            var maxx = array.Select(t => t.item.Rect.Width + t.item.Rect.X).Max();
+            var miny = array.Min(t => t.index) * shreddedHeight - shreddedHeight * 2;
+            var maxy = array.Max(t =>t.index) * shreddedHeight;
 
             return new Rectangle(minx, (maxy - miny) / 2 + miny, maxx - minx, maxx - minx);
 
