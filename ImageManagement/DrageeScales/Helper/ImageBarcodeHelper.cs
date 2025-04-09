@@ -7,6 +7,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.Foundation.Collections;
 
 namespace DrageeScales.Helper
 {
@@ -166,54 +167,36 @@ namespace DrageeScales.Helper
                 var result = BarcodeReader.ReadFromBitmap(shreddeddImage);
                 resultList.Add(result);
             }
-            if (!resultList.Where(t => t.IsSuccessRead).Any())
+            var records = resultList.Select((t,i)=>new { item=t,index=i }).Where(t => t.item.IsSuccessRead).Select(t =>
+            {
+                t.item.TryGetResultValue(out var resultValue);
+                return new { item = resultValue, index = t.index };
+            }).Where(t=>t.item is not null);
+
+            var successList=appSetting.RegularExpressionFilter is (null or "") ?
+                records : records.Where(t=> System.Text.RegularExpressions.Regex.IsMatch(t.item.Value, appSetting.RegularExpressionFilter));
+
+            if (!successList.Any())
             {
                 return BarcodeParameter.FromUnableRed();
             }
             
-            var key = resultList.Where(t => t.IsSuccessRead).
-                Select(t => t.TryGetResultValue(out var buffer) ? buffer.Value : "").
+            var key = successList.Select(t => t.item.Value).
                 GroupBy(t => t).
                 Aggregate((a, b) => a.Count() > b.Count() ? a : b).
                 Key;
-            return BarcodeParameter.FromSuccess(
-                key,
-                GetHorizontalShreddedRect(resultList,appSetting, key, appSetting.ShreddedRate),
-                true
-                );
-        }
 
-        /// <summary>
-        /// 千切りイメージから位置を取得
-        /// </summary>
-        /// <param name="items"></param>
-        /// <param name="valueKey"></param>
-        /// <param name="shreddedHeight"></param>
-        /// <returns></returns>
-        internal static Rectangle GetHorizontalShreddedRect(IEnumerable<IBarcodeItem> items,AppSetting appsetting, string valueKey, int shreddedHeight)
-        {
-            var records = items.Select((t,i)=>new { val=t, index=i }).Where(t => t.val.IsSuccessRead).Select(t =>
-            {
-                t.val.TryGetResultValue(out var resultValue);
-                return new { t.index, item = resultValue };
-            });
+            // 千切りイメージから位置を取得
+            var rectItems = successList.Where(t => t is not null && t.item.Value == key);
+            var minx = rectItems.Min(t => t.item.Rect.X);
+            var maxx = rectItems.Select(t => t.item.Rect.Width + t.item.Rect.X).Max();
+            var miny = rectItems.Min(t => t.index) * appSetting.ShreddedRate - appSetting.ShreddedRate * 2;
+            var maxy = rectItems.Max(t => t.index) * appSetting.ShreddedRate;
 
-            var array = appsetting.RegularExpressionFilter is (null or "") ?
-                records.Where(t => t is not null && t.item.Value == valueKey) : 
-                records.Where(t => t is not null && t.item.Value == valueKey && System.Text.RegularExpressions.Regex.IsMatch(t.item.Value, appsetting.RegularExpressionFilter));
+            var resultRect= new Rectangle(minx, (maxy - miny) / 2 + miny, maxx - minx, maxx - minx);
 
-            var minx= array.Min(t => t.item.Rect.X);
-            var maxx = array.Select(t => t.item.Rect.Width + t.item.Rect.X).Max();
-            var miny = array.Min(t => t.index) * shreddedHeight - shreddedHeight * 2;
-            var maxy = array.Max(t =>t.index) * shreddedHeight;
-
-            return new Rectangle(minx, (maxy - miny) / 2 + miny, maxx - minx, maxx - minx);
-
-            //var posX = records.Where(t => t is not null && t.item.Value == valueKey).Min(t => t.item.Rect.X);
-            //var posY = records.Where(t => t.item is not null && t.item.Value == valueKey).Min(t => t.index) * shreddedHeight - shreddedHeight;
-            //var width = records.Where(t => t is not null && t.item.Value == valueKey).Select(t => t.item.Rect.Width + t.item.Rect.X).Max() - posX;
-            //var height = records.Where(t => t is not null && t.item.Value == valueKey).Max(t => t.index) * shreddedHeight +(shreddedHeight * 2) - posY;
-            //return new Rectangle(posX, posY, width, height);
+            var resultParameter= BarcodeParameter.FromSuccess(key,resultRect,true);
+            return resultParameter;
         }
         /// <summary>
         /// ファイル名

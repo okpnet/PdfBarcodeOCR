@@ -34,6 +34,7 @@ namespace DrageeScales.Shared.Services.Configs
 
             using var stresm=new System.IO.StreamReader(FileName,Encoding.UTF8);
             var buffer=stresm.ReadToEnd();
+            stresm.Close();
             if(buffer is (null or ""))
             {
                 return new AppSetting();
@@ -43,7 +44,6 @@ namespace DrageeScales.Shared.Services.Configs
 
             if(settings is null)
             {
-                System.IO.File.Delete(FileName);
                 settings = new AppSetting();
             }
             Save(settings);
