@@ -72,6 +72,9 @@ namespace DrageeScales
             var app=_host.Services.GetRequiredService<AppService>();
             app.Apps = this;
             m_window.Activate();
+            using var stream = new StreamReader("dragee_key.pem");
+            var buffer = stream.ReadToEnd();
+            stream.Close();
         }
 
         private Window m_window;

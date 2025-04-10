@@ -22,7 +22,7 @@ namespace DrageeScales.Shared.Services.NetspakleUpdate
     public class NetSparkleService : IDisposable
     {
         readonly ILogger _logger;
-        readonly Subject<UpdateEventArg> _subject;
+        readonly Subject<UpdateEventArg> _subject=new();
         /// <summary>
         /// Sparkleインスタンス
         /// </summary>
@@ -89,15 +89,21 @@ namespace DrageeScales.Shared.Services.NetspakleUpdate
             UpdateCheckFinishedEvent = _subject.Where(t => t.IsCheckFinished).AsObservable();//チェック完了イベント
 
             AddEvent();
-
             _sparkle.StartLoop(true);
-            _info = _sparkle.CheckForUpdatesQuietly().Result;
+
         }
 
         public NetSparkleService(ILogger<NetSparkleService> logger, Action appclose, FileInfo publicKeyPath, Uri appcastUrl) : this(appclose, publicKeyPath, appcastUrl)
         {
             _logger = logger;
         }
+
+        public async void StartObserver()
+        {
+            await
+            _info =await _sparkle.CheckForUpdatesQuietly();
+        }
+
         /// <summary>
         /// イベント追加
         /// </summary>

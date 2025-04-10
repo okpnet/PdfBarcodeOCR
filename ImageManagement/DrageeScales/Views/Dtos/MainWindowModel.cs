@@ -115,7 +115,7 @@ namespace DrageeScales.Views.Dtos
             _disposables.Add(
                 _netSparkleService.UpdateStandbyEvent.Subscribe(t =>
                 {
-                    _toastItems.Add(new ToastItem(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,""))
+                    _toastItems.Add(new ToastItem(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational, ""));
                 })
                 );
             
