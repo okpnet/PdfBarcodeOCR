@@ -398,3 +398,4 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/ImageManagement/DrageeScales/dragee_key.pem
