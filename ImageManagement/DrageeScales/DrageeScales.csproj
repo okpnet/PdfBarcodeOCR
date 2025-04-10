@@ -21,6 +21,7 @@
     <Content Remove="Assets\noimage.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="dragee_key.pem" />
     <None Remove="Views\Controls\FileItemCollectionView.xaml" />
     <None Remove="Views\Controls\FileItemView.xaml" />
   </ItemGroup>
@@ -33,6 +34,9 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="dragee_key.pem">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -80,6 +84,9 @@
     <Page Update="Views\Controls\FileItemView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Shared\Services\NetspakleUpdate\Helper\" />
   </ItemGroup>
 
   <!--

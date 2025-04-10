@@ -72,7 +72,6 @@ namespace DrageeScales
             var app=_host.Services.GetRequiredService<AppService>();
             app.Apps = this;
             m_window.Activate();
-
         }
 
         private Window m_window;

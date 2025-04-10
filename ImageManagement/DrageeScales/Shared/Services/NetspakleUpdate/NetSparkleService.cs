@@ -1,4 +1,5 @@
 ﻿using DrageeScales.Shared.Services.NetspakleUpdate.Args;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetSparkleUpdater;
 using NetSparkleUpdater.Enums;
@@ -12,7 +13,9 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace DrageeScales.Shared.Services.NetspakleUpdate
 {
@@ -91,7 +94,7 @@ namespace DrageeScales.Shared.Services.NetspakleUpdate
             _info = _sparkle.CheckForUpdatesQuietly().Result;
         }
 
-        public NetSparkleService(ILogger<NetSparkleService> logger, Action appclose, FileInfo publicKeyPath, Uri appcastUrl, FileInfo downloadPath) : this(appclose, publicKeyPath, appcastUrl)
+        public NetSparkleService(ILogger<NetSparkleService> logger, Action appclose, FileInfo publicKeyPath, Uri appcastUrl) : this(appclose, publicKeyPath, appcastUrl)
         {
             _logger = logger;
         }

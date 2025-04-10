@@ -1,6 +1,7 @@
 ﻿using DrageeScales.Presentation.Services;
 using DrageeScales.Shared.Dtos;
 using DrageeScales.Shared.Services.Configs;
+using DrageeScales.Shared.Services.NetspakleUpdate;
 using Microsoft.Extensions.Logging;
 using PdfConverer.PdfProcessing;
 using System;
@@ -20,6 +21,8 @@ namespace DrageeScales.Views.Dtos
     public class MainWindowModel: ViewModelBase,IDisposable,INotifyPropertyChanged
     {
         readonly ILogger? _logger;
+        readonly NetSparkleService _netSparkleService;
+
         CompositeDisposable _disposables = new();
         Subject<object> _subject = new();
 
@@ -37,8 +40,6 @@ namespace DrageeScales.Views.Dtos
                 OnPropertyChanged(nameof(IsEnable));
             }
         }
-
-        public IObservable<bool> CollectionAnyEvent { get; }
 
         public PdfImageAdapterService Service { get; }
 
@@ -73,12 +74,51 @@ namespace DrageeScales.Views.Dtos
             }
         }
 
-        public MainWindowModel(IConfigService<AppSetting> configService, PdfImageAdapterService service,ILogger<MainWindowModel> logger):base(configService)
+        int _collectionCount;
+        public int CollectionCount
+        {
+            get => _collectionCount;
+            set
+            {
+                if(_collectionCount == value)
+                {
+                    return;
+                }
+                _collectionCount = value;
+                OnPropertyChanged(nameof(CollectionCount));
+                _subject.OnNext(_collectionCount);
+            }
+        }
+
+        public IObservable<int> CollectionCountChangeEvent { get; }
+
+        public MainWindowModel(IConfigService<AppSetting> configService, PdfImageAdapterService service, ILogger<MainWindowModel> logger, NetSparkleService sparkleService, NetSparkleService netSparkleService) : base(configService)
         {
             Service = service;
             _logger = logger;
+            _netSparkleService = netSparkleService;
             ModalOptionBases = new BusyModalOption();
-            CollectionAnyEvent=_subject.AsObservable<object>().OfType<bool>();
+            CollectionCountChangeEvent = _subject.AsObservable<object>().OfType<int>();
+
+            _disposables.Add(
+                Observable.FromEventPattern<NotifyCollectionChangedEventArgs>(service.Collection, nameof(service.Collection.CollectionChanged)).Subscribe
+                (t =>
+                {
+                    if (CollectionCount == service.Collection.Count)
+                    {
+                        return;
+                    }
+                    CollectionCount = service.Collection.Count;
+                })
+            );
+
+            _disposables.Add(
+                _netSparkleService.UpdateStandbyEvent.Subscribe(t =>
+                {
+                    _toastItems.Add(new ToastItem(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,""))
+                })
+                );
+            
         }
 
         public async Task OnOpenSource(IEnumerable<string> source)

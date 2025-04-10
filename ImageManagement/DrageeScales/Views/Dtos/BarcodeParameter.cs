@@ -25,7 +25,7 @@ namespace DrageeScales.Views.Dtos
 
         public static BarcodeParameter FromSuccess(string value, Rectangle rectangle, bool shredded = false) => new(null, true, value, shredded, rectangle);
 
-        public static BarcodeParameter FromUnableRed() => new(null, false, string.Empty, false, new());
+        public static BarcodeParameter FromUnableRead() => new(null, false, string.Empty, false, new());
 
         public static BarcodeParameter FromException(Exception exception) => new(exception, false, string.Empty, false, new());
 

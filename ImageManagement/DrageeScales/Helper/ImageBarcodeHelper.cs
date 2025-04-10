@@ -53,6 +53,14 @@ namespace DrageeScales.Helper
                 var result = BarcodeReader.ReadFromBitmap(bitmap);
                 if (result.TryGetResultValue(out var barcode))
                 {
+                    var barcodeValue = appSetting.RegularExpressionFilter is (null or "") ?
+                        barcode.Value : System.Text.RegularExpressions.Regex.Match(barcode.Value, appSetting.RegularExpressionFilter).Value;
+
+                    if(barcodeValue is (null or ""))
+                    {
+                        return BarcodeParameter.FromUnableRead();
+                    }
+
                     //バーコード切り抜きサイズ
                     var overrapW = (int)((barcode.Rect.Width * 1.2 - barcode.Rect.Width) / 2);
 
@@ -64,9 +72,9 @@ namespace DrageeScales.Helper
                         barcode.Rect.Width + (overrapW * 2),//Xのオーバーラップの分
                         barcode.Rect.Height + (AppDefine.BARCODE_IMAGE_OVERLAP * 2)//Yのオーバーラップの分
                         );
-                    return BarcodeParameter.FromSuccess(barcode.Value,rect);
+                    return BarcodeParameter.FromSuccess(barcodeValue, rect);
                 }
-                return BarcodeParameter.FromUnableRed();
+                return BarcodeParameter.FromUnableRead();
             });
 
             if (result.IsSucces)
@@ -178,7 +186,7 @@ namespace DrageeScales.Helper
 
             if (!successList.Any())
             {
-                return BarcodeParameter.FromUnableRed();
+                return BarcodeParameter.FromUnableRead();
             }
             
             var key = successList.Select(t => t.item.Value).

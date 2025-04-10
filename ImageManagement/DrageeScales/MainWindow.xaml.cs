@@ -2,6 +2,7 @@ using DrageeScales.Views.Dtos;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -46,9 +47,10 @@ namespace DrageeScales
 
             _logger = logger;
             WindowModel = mainWindowModel;
-            _disposables.Add(WindowModel.CollectionAnyEvent.Subscribe(t =>
+            _disposables.Add(WindowModel.CollectionCountChangeEvent.Subscribe(t =>
             {
-                DispatcherQueue.TryEnqueue(() => StateChange(t));
+                StateChange(t > 0);
+                //DispatcherQueue.TryEnqueue(() => StateChange(t > 0));
             }));
 
             _logger.LogInformation("INITILIZED MAINWINDOW");
