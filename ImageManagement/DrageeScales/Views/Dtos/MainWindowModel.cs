@@ -21,7 +21,6 @@ namespace DrageeScales.Views.Dtos
     public class MainWindowModel: ViewModelBase,IDisposable,INotifyPropertyChanged
     {
         readonly ILogger? _logger;
-        readonly NetSparkleService _netSparkleService;
 
         CompositeDisposable _disposables = new();
         Subject<object> _subject = new();
@@ -92,11 +91,10 @@ namespace DrageeScales.Views.Dtos
 
         public IObservable<int> CollectionCountChangeEvent { get; }
 
-        public MainWindowModel(IConfigService<AppSetting> configService, PdfImageAdapterService service, ILogger<MainWindowModel> logger, NetSparkleService sparkleService, NetSparkleService netSparkleService) : base(configService)
+        public MainWindowModel(IConfigService<AppSetting> configService, PdfImageAdapterService service, ILogger<MainWindowModel> logger) : base(configService)
         {
             Service = service;
             _logger = logger;
-            _netSparkleService = netSparkleService;
             ModalOptionBases = new BusyModalOption();
             CollectionCountChangeEvent = _subject.AsObservable<object>().OfType<int>();
 
@@ -111,14 +109,6 @@ namespace DrageeScales.Views.Dtos
                     CollectionCount = service.Collection.Count;
                 })
             );
-
-            _disposables.Add(
-                _netSparkleService.UpdateStandbyEvent.Subscribe(t =>
-                {
-                    _toastItems.Add(new ToastItem(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational, ""));
-                })
-                );
-            
         }
 
         public async Task OnOpenSource(IEnumerable<string> source)
@@ -154,6 +144,11 @@ namespace DrageeScales.Views.Dtos
                 await Task.Delay(200);
                 ModalOptionBases.IsEnabled = true;
                 await Service.OnReadBarcodeFromImage(progressBarcode);
+
+                ModalOptionBases = new BusyModalOption();
+                ModalOptionBases.IsEnabled = true;
+                await Task.Delay(200);
+                await Service.OnFileNameCheckingAsync(ConfigService.Config.GlueChar);
             }
             finally
             {

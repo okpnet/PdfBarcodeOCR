@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
@@ -16,12 +16,12 @@
 	  <SelfContained>false</SelfContained>
 	  <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
 	  <ApplicationIcon>Assets\appicon.ico</ApplicationIcon>
+	  <Version>1.0.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="Assets\noimage.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="dragee_key.pem" />
     <None Remove="Views\Controls\FileItemCollectionView.xaml" />
     <None Remove="Views\Controls\FileItemView.xaml" />
   </ItemGroup>
@@ -34,9 +34,6 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
-    <Content Include="dragee_key.pem">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>

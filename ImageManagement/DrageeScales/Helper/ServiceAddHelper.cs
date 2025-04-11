@@ -25,16 +25,10 @@ namespace DrageeScales.Helper
             services.AddSingleton<PdfFileItemCollection>();
             services.AddTransient<MainWindowModel>();//VM
             services.AddSingleton<AppService>();
-            services.AddConfigService(()=>new LocalFilleConfigModelFacade());
-
-            services.AddSingleton(provider =>
-            {
-                var app = provider.GetRequiredService<AppService>();
-                var logger=provider.GetService<ILogger<NetSparkleService>>();
-                var keypath = new FileInfo(AppDefine.ED25529_FILE_PATH);
-                var url = new Uri(AppDefine.APPCAST_URL);
-                var service = new NetSparkleService(logger, () => app.Apps.Exit(), keypath, url);
-                return service;
+            services.AddConfigService((provider)=>{
+                var logger=provider.GetService<ILogger<LocalFilleConfigModelFacade>>();
+                return new LocalFilleConfigModelFacade(logger);
+                ;
             });
 
             return services;

@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Foundation.Collections;
+using ZXing.QrCode.Internal;
 
 namespace DrageeScales.Helper
 {
@@ -63,14 +64,14 @@ namespace DrageeScales.Helper
 
                     //バーコード切り抜きサイズ
                     var overrapW = (int)((barcode.Rect.Width * 1.2 - barcode.Rect.Width) / 2);
-
+                    var barLength = (barcode.Rect.Width > barcode.Rect.Height ? barcode.Rect.Width : barcode.Rect.Height) + overrapW;
                     var rect = CheckedRect(
                         maxWidth,
                         maxHeight,
                         barcode.Rect.X - overrapW,
-                        barcode.Rect.Y - AppDefine.BARCODE_IMAGE_OVERLAP,
-                        barcode.Rect.Width + (overrapW * 2),//Xのオーバーラップの分
-                        barcode.Rect.Height + (AppDefine.BARCODE_IMAGE_OVERLAP * 2)//Yのオーバーラップの分
+                        barcode.Rect.Y - barLength / 2,
+                        barLength,//Xのオーバーラップの分
+                        barLength//Yのオーバーラップの分
                         );
                     return BarcodeParameter.FromSuccess(barcodeValue, rect);
                 }
@@ -96,14 +97,15 @@ namespace DrageeScales.Helper
                 {
                     //バーコード切り抜きサイズ
                     var overrapW = (int)((result.Rectangles.Width * 1.2 - result.Rectangles.Width) / 2);
+                    var barLength = (result.Rectangles.Width > result.Rectangles.Height ? result.Rectangles.Width : result.Rectangles.Height) + overrapW * 3;
 
                     var rect = CheckedRect(
-                        maxWidth,
-                        maxHeight,
-                        result.Rectangles.X - overrapW,
-                        result.Rectangles.Y - overrapW,
-                        result.Rectangles.Width + (overrapW * 3),
-                        result.Rectangles.Height + (overrapW * 3)
+                            maxWidth,
+                            maxHeight,
+                            result.Rectangles.X - overrapW,
+                            result.Rectangles.Y - barLength / 2,
+                            barLength,
+                            barLength
                         );
 
                     return BarcodeParameter.FromSuccess(result.Value, rect, true);
@@ -129,14 +131,15 @@ namespace DrageeScales.Helper
                     {
                         //バーコード切り抜きサイズ
                         var overrapW =(int)((strechResult.Rectangles.Width * 1.2 - strechResult.Rectangles.Width)/2);
+                        var barLength = (int)(strechResult.Rectangles.Width > strechResult.Rectangles.Height ? (strechResult.Rectangles.Width / appSetting.StretchLength) : (strechResult.Rectangles.Height / appSetting.StretchLength)) + overrapW * 2;
 
                         var prevRect = CheckedRect(
                             maxWidth,
                             maxHeight,
                             (int)(strechResult.Rectangles.X / appSetting.StretchLength) - overrapW,
-                            strechResult.Rectangles.Y - overrapW,
-                            (int)(strechResult.Rectangles.Width / appSetting.StretchLength) + (overrapW * 2),//Xのオーバーラップの分
-                            (int)(strechResult.Rectangles.Height / appSetting.StretchLength) + (overrapW * 2)
+                            strechResult.Rectangles.Y - barLength / 2,
+                            barLength,//Xのオーバーラップの分
+                            barLength
                             );//Yのオーバーラップの分
 
                         return BarcodeParameter.FromSuccess(strechResult.Value, prevRect, true);

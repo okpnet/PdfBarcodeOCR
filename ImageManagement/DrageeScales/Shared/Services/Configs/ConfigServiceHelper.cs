@@ -11,11 +11,12 @@ namespace DrageeScales.Shared.Services.Configs
 {
     public static class ConfigServiceHelper
     {
-        public static IServiceCollection AddConfigService<T>(this IServiceCollection services,Func<IConfigModelFacade<T>> factory)
+        public static IServiceCollection AddConfigService<T>(this IServiceCollection services,Func<IServiceProvider,IConfigModelFacade<T>> factory)
         {
-            var facade = factory.Invoke();
+            
             services.AddSingleton<IConfigService<T>, ConfigService<T>>(provider =>
             {
+                var facade = factory.Invoke(provider);
                 var logger = provider.GetService(typeof(ILogger<ConfigService<T>>)) as ILogger<ConfigService<T>>;
                 return new ConfigService<T>(logger, facade);
             });

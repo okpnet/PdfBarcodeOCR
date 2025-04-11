@@ -25,7 +25,7 @@ namespace DrageeScales
 
         public const string APPCAST_URL = "https://github.com/okpnet/PdfBarcodeOCR/releases/edit/untagged-c6775c7b2b60eb3f1695";
 
-        public const string ED25529_FILE_PATH = "dragee_key.pem";
+        public const string GLUE_STR = "-";
 
     }
 }

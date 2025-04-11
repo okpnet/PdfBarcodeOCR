@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace DrageeScales.Shared.Dtos
 {
+    [JsonSerializable(typeof(AppSetting))]
     public sealed class AppSetting: ModalOptionBase,INotifyPropertyChanged
     {
         string _regularFilter;
@@ -69,18 +71,36 @@ namespace DrageeScales.Shared.Dtos
             }
         }
 
+        string _glueChar = "_";
+
+        public string GlueChar
+        {
+            get=> _glueChar;
+            set
+            {
+                if(value == _glueChar)
+                {
+                    return;
+                }
+                _glueChar = value;
+                OnPropertyChanged(nameof(GlueChar));
+            }
+        }
+
         public AppSetting()
         {
             _regularFilter = "";
             _thumbnailRate = AppDefine.THUMBNAIL_SIZE;
             _shreddedRate= AppDefine.SHREDDED_HEIGHT;
+            _glueChar = AppDefine.GLUE_STR;
         }
 
-        public AppSetting(string regularExpressionFilter, int thumbnailRate, int shreddedRate)
+        public AppSetting(string regularExpressionFilter, int thumbnailRate, int shreddedRate, string glueChar)
         {
             _regularFilter = regularExpressionFilter;
             _shreddedRate = shreddedRate;
             _thumbnailRate = thumbnailRate;
+            _glueChar = glueChar;
         }
     }
 }

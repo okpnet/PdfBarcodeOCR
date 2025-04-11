@@ -1,5 +1,6 @@
 ﻿using DrageeScales.Helper;
 using DrageeScales.Presentation.Dtos;
+using DrageeScales.Shared.Helper;
 using DrageeScales.Views.Dtos;
 using Microsoft.Extensions.Logging;
 using PdfConverer.PdfProcessing;
@@ -180,6 +181,21 @@ namespace DrageeScales.Presentation.Services
             await Task.WhenAll(tasks);
             await Task.Delay(1000);
             _logger?.LogInformation($"COMPLETE READ BARCODE {numOfTasks} FILES.");
+        }
+
+        public async Task OnFileNameCheckingAsync(string gluewString)
+        {
+            var names = Collection.PdfFileItems.GroupBy(t => t.FileNameToSave).Where(t => t.Count() > 1);
+
+            foreach (var name in names)
+            {
+                foreach(var item in name)
+                {
+                    var newName = FileNameHelper.CreateNumberAppendToNewname(name.Select(t=>t.FileNameToSave), name.Key, gluewString);
+                    item.FileNameToSave = newName;
+                    await Task.Delay(10);
+                }
+            }
         }
 
         /// <summary>
