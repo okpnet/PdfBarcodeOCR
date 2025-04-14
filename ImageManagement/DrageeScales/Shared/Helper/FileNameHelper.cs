@@ -17,8 +17,8 @@ namespace DrageeScales.Shared.Helper
         /// <returns>番号つきの新しい名前</returns>
         public static string CreateNumberAppendToNewname(IEnumerable<string> list, string newName, string grueStr = "_")
         {
-            var nm= EscapeRegexChar(newName);
-            var gc = EscapeRegexChar(grueStr);
+            var nm = System.Text.RegularExpressions.Regex.Escape(newName);
+            var gc = System.Text.RegularExpressions.Regex.Escape(grueStr);
 
             var sufixVal = 0;
             var sufixList = list.
@@ -38,34 +38,56 @@ namespace DrageeScales.Shared.Helper
                     return 0;
                 }).Max() + 1;
             }
-            var result = nm + (sufixVal > 0 ? $"{gc}{sufixVal}" : "");
+            var result = newName + (sufixVal > 0 ? $"{grueStr}{sufixVal}" : "");
             return result;
         }
-
-        private static string EscapeRegexChar(string value)
+        /// <summary>
+        /// 新しい名前を生成する。リストから新しい名前と一致する名前に連番を付けて返す
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="values">配列</param>
+        /// <param name="getName">インスタンスから文字列を取り出す</param>
+        /// <param name="setName">インスタンスへ文字列をセットする</param>
+        /// <param name="grueStr">文字列と連番の接続文字列</param>
+        public static void CreateNumberAppendToNewnames<T>(this IEnumerable<T> values, Func<T, string> getName, Action<T, string> setName, string grueStr = "_")
         {
-            var result="";
-            foreach (char c in value)
+            var groups = values.GroupBy(getName).Where(t => t.Count() > 1);
+
+            foreach (var group in groups)
             {
-                result += c switch
+                var continued = false;
+
+                foreach (var item in group)
                 {
-                    '*' => "\\*",
-                    '+' => "\\+",
-                    '.' => "\\.",
-                    '{' => "\\{",
-                    '}' => "\\}",
-                    '(' => "\\(",
-                    ')' => "\\)",
-                    '[' => "\\[",
-                    ']' => "\\]",
-                    '$' => "\\$",
-                    '-' => "\\-",
-                    '|' => "\\|",
-                    '/' => "\\/",
-                    _ => ""
-                };
+                    if (!continued | ReferenceEquals(item, group.FirstOrDefault()))
+                    {
+                        continued = true;
+                        continue;
+                    }
+                    var newName = CreateNumberAppendToNewname(group.Select(getName), getName(item), grueStr);
+                    setName(item, newName);
+                }
             }
-            return result;
+        }
+
+        public static IEnumerable<string> CreateNumberAppendToNewnames(this IEnumerable<string> values, string grueStr = "_")
+        {
+            var groups = values.GroupBy(t => t);
+            foreach (var group in groups)
+            {
+                var continued = false;
+                foreach (var item in group)
+                {
+                    if (!continued)
+                    {
+                        continued = true;
+                        yield return item;
+                        continue;
+                    }
+                    var newName = CreateNumberAppendToNewname(group, item, grueStr);
+                    yield return newName;
+                }
+            }
         }
     }
 }
