@@ -1,19 +1,11 @@
 ﻿using AppUpdater;
 using DrageeScales.Presentation.Services;
-using DrageeScales.Shared.Dtos;
 using DrageeScales.Shared.Services.Configs;
-using DrageeScales.Shared.Services.NetspakleUpdate;
 using DrageeScales.Views.Dtos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NetSparkleUpdater;
 using Serilog;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DrageeScales.Helper
 {
@@ -32,6 +24,7 @@ namespace DrageeScales.Helper
                 return new LocalFilleConfigModelFacade(logger);
                 ;
             });
+
             services.AddSingleton((provider) =>{
                 var logger = provider.GetService<ILogger<AppUpdateService>>();
                 var updater = AppUpdateService.CreateAppUpdateService(

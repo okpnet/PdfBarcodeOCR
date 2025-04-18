@@ -25,7 +25,6 @@
                         x:Name="InfoBarElement"
                         IsOpen="True"
                         Severity="{x:Bind Severity}"
-                        Message="{x:Bind Message}"
                         IsClosable="{x:Bind IsClosebtn}"
                         Closed="InfoBar_Closed"
                         Opacity="1"
@@ -33,9 +32,12 @@
                         <InfoBar.RenderTransform>
                             <TranslateTransform Y="50" />
                         </InfoBar.RenderTransform>
-                        <HyperlinkButton Visibility="{x:Bind ItemBtn.IsVisibility}" Command="{x:Bind ItemBtn.ClickCommand}">
-                            <TextBlock Text="{x:Bind ItemBtn.Lavel}"></TextBlock>
-                        </HyperlinkButton>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="{x:Bind Message}" VerticalAlignment="Center"></TextBlock>
+                            <HyperlinkButton Visibility="{x:Bind ItemBtn.IsVisibility}" Command="{x:Bind ItemBtn.ClickCommand}" VerticalAlignment="Center">
+                                <TextBlock Text="{x:Bind ItemBtn.Label}" VerticalAlignment="Center"></TextBlock>
+                            </HyperlinkButton>
+                        </StackPanel>
                     </InfoBar>
                 </Grid>
             </DataTemplate>

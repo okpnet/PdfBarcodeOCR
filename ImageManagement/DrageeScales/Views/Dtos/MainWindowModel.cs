@@ -13,6 +13,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace DrageeScales.Views.Dtos
@@ -115,7 +116,7 @@ namespace DrageeScales.Views.Dtos
                     CollectionCount = service.Collection.Count;
                 })
             );
-
+            _appUpdateService = updateService;
             AddUpdaterEvent();
         }
         /// <summary>
@@ -123,6 +124,17 @@ namespace DrageeScales.Views.Dtos
         /// </summary>
         void AddUpdaterEvent()
         {
+            _disposables.Add(
+                _appUpdateService.UpdateCheckFinishedEvent.Subscribe(e =>
+                {
+                    var version=Assembly.GetExecutingAssembly().GetName().Version;
+                    if(version.ToString().StartsWith(e.Version))
+                    {
+                        e.IsCancel = true;
+                    }
+                })
+            );
+
             _disposables?.Add(
                 _appUpdateService.UpdateStandbyEvent.Subscribe(e =>
                 {
@@ -130,9 +142,14 @@ namespace DrageeScales.Views.Dtos
                     _updateEventArg.ShouldWait = true;
 
                     ToastItems.Add(
-                        new ToastItem(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning,
-                        $"バージョン {e.Version} のアップデートがあります",
-                        new ToastItemBtn("更新を開始する",()=>_updateEventArg.TriggerUpdate(true))
+                        new ToastItem(
+                            severity:Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning,
+                            message:$"バージョン {e.Version} のアップデートがあります",
+                            btn: new ToastItemBtn("更新を開始する", () => _updateEventArg.TriggerUpdate(true))
+                            {
+                                IsVisibility=Microsoft.UI.Xaml.Visibility.Visible
+                            },
+                            duration:20000
                         ));
                 })
             );

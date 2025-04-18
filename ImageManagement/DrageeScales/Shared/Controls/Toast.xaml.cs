@@ -59,13 +59,5 @@ namespace DrageeScales.Shared.Controls
                 toast.Dispose();
             }
         }
-
-        private void HyperlinkButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender.DataContext is ToastItem toast)
-            {
-                toast.Dispose();
-            }
-        }
     }
 }
