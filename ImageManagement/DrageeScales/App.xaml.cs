@@ -51,10 +51,14 @@ namespace DrageeScales
                     MinimumLevel.Information().
                     WriteTo.File(System.IO.Path.Combine(logDirectory,"log.txt"), rollingInterval: RollingInterval.Day).
                     CreateLogger();
+
+            
+
             //サービスホスト
             _host = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
+                    //Applicationで使用するサービスの追加
                     services=services.SetService();
                 })
                 .Build();

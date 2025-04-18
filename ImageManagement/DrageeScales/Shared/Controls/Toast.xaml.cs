@@ -28,6 +28,7 @@ namespace DrageeScales.Shared.Controls
         {
             this.InitializeComponent();
         }
+
         private void OnToastLoaded(object sender, RoutedEventArgs e)
         {
             if (sender is Grid grid &&
@@ -53,6 +54,14 @@ namespace DrageeScales.Shared.Controls
         private void InfoBar_Closed(InfoBar sender, InfoBarClosedEventArgs args)
         {
             // è“®‚Å•Â‚¶‚½ê‡‚à Dispose ‚ğŒÄ‚Ño‚µ‚Äíœ
+            if (sender.DataContext is ToastItem toast)
+            {
+                toast.Dispose();
+            }
+        }
+
+        private void HyperlinkButton_Click(object sender, RoutedEventArgs e)
+        {
             if (sender.DataContext is ToastItem toast)
             {
                 toast.Dispose();

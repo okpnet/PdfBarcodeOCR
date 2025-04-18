@@ -1,16 +1,15 @@
-﻿using DrageeScales.Presentation.Services;
+﻿using AppUpdater;
+using DrageeScales.Presentation.Services;
 using DrageeScales.Shared.Dtos;
 using DrageeScales.Shared.Services.Configs;
-using DrageeScales.Shared.Services.NetspakleUpdate;
 using Microsoft.Extensions.Logging;
+using NetSparkleUpdater.Interfaces;
 using PdfConverer.PdfProcessing;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Net.Sockets;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -20,10 +19,12 @@ namespace DrageeScales.Views.Dtos
 {
     public class MainWindowModel: ViewModelBase,IDisposable,INotifyPropertyChanged
     {
-        readonly ILogger? _logger;
+        readonly Microsoft.Extensions.Logging.ILogger? _logger;
+        readonly AppUpdateService _appUpdateService;
 
         CompositeDisposable _disposables = new();
         Subject<object> _subject = new();
+        UpdateEventArg? _updateEventArg;
 
         bool _isEnable = false;
         public bool IsEnable 
@@ -91,7 +92,12 @@ namespace DrageeScales.Views.Dtos
 
         public IObservable<int> CollectionCountChangeEvent { get; }
 
-        public MainWindowModel(IConfigService<AppSetting> configService, PdfImageAdapterService service, ILogger<MainWindowModel> logger) : base(configService)
+        public MainWindowModel(
+            IConfigService<AppSetting> configService,
+            PdfImageAdapterService service,
+            AppUpdateService updateService,
+            ILogger<MainWindowModel> logger
+            ) : base(configService)
         {
             Service = service;
             _logger = logger;
@@ -109,7 +115,32 @@ namespace DrageeScales.Views.Dtos
                     CollectionCount = service.Collection.Count;
                 })
             );
+
+            AddUpdaterEvent();
         }
+        /// <summary>
+        /// 更新の追加
+        /// </summary>
+        void AddUpdaterEvent()
+        {
+            _disposables?.Add(
+                _appUpdateService.UpdateStandbyEvent.Subscribe(e =>
+                {
+                    _updateEventArg = e;
+                    _updateEventArg.ShouldWait = true;
+
+                    ToastItems.Add(
+                        new ToastItem(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning,
+                        $"バージョン {e.Version} のアップデートがあります",
+                        new ToastItemBtn("更新を開始する",()=>_updateEventArg.TriggerUpdate(true))
+                        ));
+                })
+            );
+        }
+        /// <summary>
+        /// 更新チェック
+        /// </summary>
+        public void CheckUpdateAsync()=> _appUpdateService.UpdateDitectAsync();
 
         public async Task OnOpenSource(IEnumerable<string> source)
         {

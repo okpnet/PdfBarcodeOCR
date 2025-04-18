@@ -65,6 +65,7 @@
       <Private></Private>
     </ProjectReference>
     <ProjectReference Include="..\..\..\CsCommonLibrary\WinThumbnailHelper\WinThumbnailHelper\WinThumbnailHelper\WinThumbnailHelper.csproj" />
+    <ProjectReference Include="..\..\..\WinAppUpdate\AppUpdater\AppUpdater\AppUpdater.csproj" />
     <ProjectReference Include="..\..\BarcodeImageReader\BarcodeImageReader\BarcodeImageReader.csproj" />
   </ItemGroup>
   <ItemGroup>

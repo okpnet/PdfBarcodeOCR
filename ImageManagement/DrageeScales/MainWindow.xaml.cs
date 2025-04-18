@@ -52,11 +52,20 @@ namespace DrageeScales
                 StateChange(t > 0);
                 //DispatcherQueue.TryEnqueue(() => StateChange(t > 0));
             }));
-
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                // Window完全描画後の処理
+                OnLoaded();
+            });
             _logger.LogInformation("INITILIZED MAINWINDOW");
         }
-
-        
+        /// <summary>
+        /// ウィンドウの初期化が完了
+        /// </summary>
+        private void OnLoaded()
+        {
+            WindowModel.CheckUpdateAsync();
+        }
 
         private void StateChange(bool isChangeState)
         {

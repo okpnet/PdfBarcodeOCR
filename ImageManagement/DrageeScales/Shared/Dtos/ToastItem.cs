@@ -73,12 +73,34 @@ namespace DrageeScales.Shared.Dtos
             }
         }
 
+        ToastItemBtn _toastItemBtn = new(string.Empty,()=>{ return; });
+
+        public ToastItemBtn ItemBtn
+        {
+            get => _toastItemBtn;
+            set
+            {
+                if(ReferenceEquals(_toastItemBtn, value))
+                {
+                    return;
+                }
+                _toastItemBtn = value;
+                _toastItemBtn.Parent = this;
+                OnPropertyChanged(nameof(ToastItemBtn));
+            }
+        }
+
         public ToastItem(InfoBarSeverity severity, string message, bool isClosebtn=true, uint duration=5000)
         {
             Severity = severity;
             Message = message;
             IsClosebtn = isClosebtn;
             Duration = duration;
+        }
+
+        public ToastItem(InfoBarSeverity severity, string message,ToastItemBtn btn, bool isClosebtn = true, uint duration = 5000):this(severity,message,isClosebtn,duration)
+        {
+            ItemBtn = btn;
         }
 
         internal async Task ShowToast()
