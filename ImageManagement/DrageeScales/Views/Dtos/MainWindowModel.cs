@@ -3,7 +3,6 @@ using DrageeScales.Presentation.Services;
 using DrageeScales.Shared.Dtos;
 using DrageeScales.Shared.Services.Configs;
 using Microsoft.Extensions.Logging;
-using NetSparkleUpdater.Interfaces;
 using PdfConverer.PdfProcessing;
 using System;
 using System.Collections.Generic;
@@ -222,6 +221,27 @@ namespace DrageeScales.Views.Dtos
                 var message = $"できるかぎりファイルを保存しました";
                 ToastItems.Add(new ToastItem(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Success, message));
             }
+        }
+
+        public async Task OnClearAll()
+        {
+            IsEnable = false;
+            var isStopClear = false;
+            var tostItem = new ToastItem(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational, $"全てクリアする準備をしています")
+            {
+                ItemBtn=new ToastItemBtn("キャンセルする",()=>isStopClear=false)
+            };
+            ToastItems.Add(tostItem);
+            if (!isStopClear)
+            {
+                IsEnable = true;
+                return;
+            }
+            ModalOptionBases = new BusyModalOption();
+            ModalOptionBases.IsEnabled = true;
+            await Task.Delay(200);
+            Collection.Clear();
+            //IsEnable = true;
         }
 
         public void Dispose()

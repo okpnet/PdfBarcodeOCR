@@ -103,6 +103,7 @@ namespace DrageeScales
         }
 
 
+
         private async void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
             var folder = await ShowFolderPicker();
@@ -144,6 +145,13 @@ namespace DrageeScales
         public void Dispose()
         {
             _disposables.Clear();
+        }
+
+        private async void ClearBtn_Click(object sender, RoutedEventArgs e)
+        {
+            StateChange(true);
+            await Task.Delay(200);
+            await WindowModel.OnClearAll();
         }
     }
 }

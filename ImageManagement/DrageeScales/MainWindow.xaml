@@ -50,6 +50,11 @@
                         <FontIcon Glyph="&#xE73E;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
+                <AppBarButton Label="AllClear" x:Name="ClearBtn" IsEnabled="{x:Bind WindowModel.IsEnable,Mode=OneWay}" Click="ClearBtn_Click">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE74D;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
             </StackPanel>
             <Grid Grid.Row="1" Background="Transparent" AllowDrop="True" DragOver="Grid_DragOver" Drop="Grid_Drop">
                 <collectionViews:FileItemCollectionView x:Name="CollectionPanel" PdfPageAdpters="{x:Bind WindowModel.Collection,Mode=OneWay}"></collectionViews:FileItemCollectionView>
