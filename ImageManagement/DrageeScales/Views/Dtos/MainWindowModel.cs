@@ -226,22 +226,41 @@ namespace DrageeScales.Views.Dtos
         public async Task OnClearAll()
         {
             IsEnable = false;
-            var isStopClear = false;
-            var tostItem = new ToastItem(Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational, $"全てクリアする準備をしています")
-            {
-                ItemBtn=new ToastItemBtn("キャンセルする",()=>isStopClear=false)
-            };
-            ToastItems.Add(tostItem);
-            if (!isStopClear)
-            {
-                IsEnable = true;
-                return;
-            }
-            ModalOptionBases = new BusyModalOption();
-            ModalOptionBases.IsEnabled = true;
+            var isStopClear = true;
+            ToastItems.Add(
+                new ToastItem(
+                    severity: Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,
+                    message: $"全てクリアする準備をしています",
+                    btn: new ToastItemBtn("キャンセルする", () =>
+                    {
+                        isStopClear = false;
+                        var item=ToastItems.FirstOrDefault(ToastItems.LastOrDefault(t => t.Message.Contains("全てクリアする準備をしています")));
+                        item?.Dispose();
+                    })
+                    {
+                        IsVisibility = Microsoft.UI.Xaml.Visibility.Visible
+                    },
+                    duration: 5000
+                )
+                { BeforeCloseDelegate = () =>
+                {
+                    try
+                    {
+                        if (!isStopClear)
+                        {
+                            IsEnable = true;
+                            return;
+                        }
+                        ModalOptionBases = new BusyModalOption();
+                        ModalOptionBases.IsEnabled = true;
+                        Collection.Clear();
+                    }
+                    finally
+                    {
+                        ModalOptionBases.IsEnabled = false;
+                    }
+                } });
             await Task.Delay(200);
-            Collection.Clear();
-            //IsEnable = true;
         }
 
         public void Dispose()

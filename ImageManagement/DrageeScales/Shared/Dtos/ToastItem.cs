@@ -70,6 +70,21 @@ namespace DrageeScales.Shared.Dtos
             }
         }
 
+        Action? _beforeCloseDelegate;
+        public Action? BeforeCloseDelegate
+        {
+            get => _beforeCloseDelegate;
+            set
+            {
+                if (ReferenceEquals(_beforeCloseDelegate, value))
+                {
+                    return;
+                }
+                _beforeCloseDelegate = value;
+                OnPropertyChanged(nameof(BeforeCloseDelegate));
+            }
+        }
+
         ToastItemBtn _toastItemBtn = new(string.Empty,()=>{ return; });
 
         public ToastItemBtn ItemBtn
@@ -113,6 +128,7 @@ namespace DrageeScales.Shared.Dtos
 
         public void Dispose()
         {
+            _beforeCloseDelegate?.Invoke();
             RemoveAction(this);
         }
     }

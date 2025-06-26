@@ -16,7 +16,7 @@
 	  <SelfContained>false</SelfContained>
 	  <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
 	  <ApplicationIcon>Assets\appicon.ico</ApplicationIcon>
-	  <Version>1.0.2</Version>
+	  <Version>1.0.3</Version>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="Assets\noimage.bmp" />
